@@ -10,16 +10,8 @@
    6. Forms — waitlist + contact submit with success states
    ============================================= */
 
-// Google Apps Script webhook URL
-const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwi-jVgy0KwW5UiQE8Ca-qz_iyZscJm3tVKJhemDmK5XfQ6dEGXtA58K7SxI-dHuF7a/exec';
-
-// Sanitize input to prevent Google Sheets formula injection
-function sanitize(str) {
-    if (typeof str !== 'string') return str;
-    str = str.trim();
-    if (/^[=+\-@\t\r]/.test(str)) return "'" + str;
-    return str;
-}
+// Netlify Forms handles submissions automatically via data-netlify attribute.
+// No external webhook needed — submissions appear in Netlify dashboard.
 
 // Validate email format
 function isValidEmail(email) {
@@ -248,12 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
 
             try {
-                await fetch(GOOGLE_SHEET_WEBHOOK, {
+                const formData = new FormData(waitlistForm);
+                const res = await fetch('/', {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ formType: 'waitlist', email: sanitize(email) })
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString()
                 });
+                if (!res.ok) throw new Error('Submission failed');
 
                 // Replace form with success confirmation
                 waitlistForm.innerHTML = `
@@ -348,30 +341,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Sanitize all values for Sheets formula injection
-            const formData = {
-                formType: 'contact',
-                firstName: sanitize(firstName),
-                lastName: sanitize(lastName),
-                email: sanitize(email),
-                phone: sanitize(phone),
-                company: sanitize(company),
-                role: role,
-                message: sanitize(message),
-            };
-
             // Loading state
             btn.textContent = 'Sending...';
             btn.classList.add('btn-loading');
             btn.disabled = true;
 
             try {
-                await fetch(GOOGLE_SHEET_WEBHOOK, {
+                const netlifyData = new FormData(contactForm);
+                const res = await fetch('/', {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(formData)
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(netlifyData).toString()
                 });
+                if (!res.ok) throw new Error('Submission failed');
 
                 // Replace form wrapper with success confirmation
                 const wrapper = document.querySelector('.contact-form-wrapper');
