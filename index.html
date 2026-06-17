@@ -122,7 +122,7 @@
         <span class="eyebrow" style="justify-content:center;">Early Access</span>
         <h2 style="margin-bottom:14px;">Be First to Experience<br>Informed Recovery</h2>
         <p style="color:var(--c-gray-400);margin-bottom:32px;max-width:38ch;margin-left:auto;margin-right:auto;">Join the waitlist to get early access and be part of the future of at-home rehabilitation.</p>
-        <form name="waitlist" style="text-align:left;">
+        <form name="waitlist" data-netlify="true" netlify-honeypot="website" style="text-align:left;">
           <input type="hidden" name="form-name" value="waitlist">
           <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none;">
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -189,7 +189,7 @@
       <!-- Right: contact form -->
       <div class="reveal from-right" style="flex:1;">
         <div class="glass card-pad-lg" style="border-radius:16px;">
-          <form name="contact" style="display:grid;gap:14px;">
+          <form name="contact" data-netlify="true" netlify-honeypot="website" style="display:grid;gap:14px;">
             <input type="hidden" name="form-name" value="contact">
             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none;">
 
@@ -247,17 +247,6 @@
   </div>
 </section>
 
-<!-- Netlify Forms: build-time detection only — never shown, never submitted by user -->
-<div style="display:none" aria-hidden="true">
-  <form name="waitlist" data-netlify="true" netlify-honeypot="website">
-    <input name="form-name" value="waitlist"><input name="email"><input name="website">
-  </form>
-  <form name="contact" data-netlify="true" netlify-honeypot="website">
-    <input name="form-name" value="contact"><input name="firstName"><input name="lastName">
-    <input name="email"><select name="role"></select><input name="company"><textarea name="message"></textarea><input name="website">
-  </form>
-</div>
-
 <script>
 window.STRYD = window.STRYD || {};
 </script>
@@ -268,19 +257,18 @@ window.STRYD = window.STRYD || {};
   initTweaks({ glassBlur: 24, glassAlpha: 0.07, depth: 1.0, waveSpeed: 0.9, glow: true });
 
   /* ================================================================
-     FORM HANDLING — mirrors the V2 approach that is confirmed working:
-     e.preventDefault() → fetch POST to '/' → green tick on success.
-     data-netlify stays in the DOM so Netlify stores verified entries.
-     Client-side rate limiting (localStorage) guards against repeat hits.
-     Server-side rate limiting + validation runs in the Netlify Function
-     as a background layer but is NOT in the critical path here.
+     FORM HANDLING
+     Listeners registered synchronously (no DOMContentLoaded wrapper)
+     so they fire BEFORE Netlify's async-injected script can attach
+     its own listener. stopImmediatePropagation() then blocks Netlify's
+     popup handler entirely. fetch POST to '/' with data-netlify on the
+     real forms produces verified submissions in the Netlify dashboard.
      ================================================================ */
 
   function isValidEmail(v) {
     return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/.test(String(v || ''));
   }
 
-  // Client-side rate limit — 5 per hour per form
   function clientRateLimit(name) {
     const key = 'stryd-rl-' + name, WIN = 3600000, MAX = 5, now = Date.now();
     let t = []; try { t = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
@@ -317,72 +305,71 @@ window.STRYD = window.STRYD || {};
     setTimeout(() => p.remove(), 6000);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  /* --- Waitlist form --- */
+  (function () {
+    const form = document.querySelector('form[name="waitlist"]');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const btn  = form.querySelector('[type="submit"]');
+      const orig = btn ? btn.textContent : '';
+      const email = (form.querySelector('[name="email"]')?.value || '').trim();
 
-    /* --- Waitlist form --- */
-    const waitlistForm = document.querySelector('form[name="waitlist"]');
-    if (waitlistForm) {
-      waitlistForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn  = waitlistForm.querySelector('[type="submit"]');
-        const orig = btn ? btn.textContent : '';
-        const email = (waitlistForm.querySelector('[name="email"]')?.value || '').trim();
+      if (!isValidEmail(email)) { showErr(form, btn, orig, 'Please enter a valid email address.'); return; }
+      const rl = clientRateLimit('waitlist');
+      if (!rl.ok) { showErr(form, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
 
-        if (!isValidEmail(email)) { showErr(waitlistForm, btn, orig, 'Please enter a valid email address.'); return; }
+      if (btn) { btn.textContent = 'Submitting\u2026'; btn.disabled = true; }
+      try {
+        const res = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form)).toString()
+        });
+        if (!res.ok) throw new Error();
+        showSuccess(form);
+      } catch {
+        showErr(form, btn, orig, 'Something went wrong \u2014 please try again.');
+      }
+    }, { capture: true });
+  })();
 
-        const rl = clientRateLimit('waitlist');
-        if (!rl.ok) { showErr(waitlistForm, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
+  /* --- Contact form --- */
+  (function () {
+    const form = document.querySelector('form[name="contact"]');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const btn  = form.querySelector('[type="submit"]');
+      const orig = btn ? btn.textContent : '';
+      const get  = n => (form.querySelector(`[name="${n}"]`)?.value || '').trim();
+      const ROLES = ['clinician','patient','investor','partner','researcher','other'];
 
-        if (btn) { btn.textContent = 'Submitting\u2026'; btn.disabled = true; }
-        try {
-          const res = await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(new FormData(waitlistForm)).toString()
-          });
-          if (!res.ok) throw new Error();
-          showSuccess(waitlistForm);
-        } catch {
-          showErr(waitlistForm, btn, orig, 'Something went wrong \u2014 please try again.');
-        }
-      });
-    }
+      if (!get('firstName') || !get('lastName')) { showErr(form, btn, orig, 'First and last name are required.'); return; }
+      if (!isValidEmail(get('email')))            { showErr(form, btn, orig, 'Please enter a valid email address.'); return; }
+      if (!ROLES.includes(get('role')))           { showErr(form, btn, orig, 'Please select your role.'); return; }
+      if (!get('message'))                        { showErr(form, btn, orig, 'A message is required.'); return; }
+      if (get('message').length > 2000)           { showErr(form, btn, orig, 'Message is too long (max 2000 characters).'); return; }
 
-    /* --- Contact form --- */
-    const contactForm = document.querySelector('form[name="contact"]');
-    if (contactForm) {
-      contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn  = contactForm.querySelector('[type="submit"]');
-        const orig = btn ? btn.textContent : '';
-        const get  = n => (contactForm.querySelector(`[name="${n}"]`)?.value || '').trim();
-        const ROLES = ['clinician','patient','investor','partner','researcher','other'];
+      const rl = clientRateLimit('contact');
+      if (!rl.ok) { showErr(form, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
 
-        if (!get('firstName') || !get('lastName')) { showErr(contactForm, btn, orig, 'First and last name are required.'); return; }
-        if (!isValidEmail(get('email')))            { showErr(contactForm, btn, orig, 'Please enter a valid email address.'); return; }
-        if (!ROLES.includes(get('role')))           { showErr(contactForm, btn, orig, 'Please select your role.'); return; }
-        if (!get('message'))                        { showErr(contactForm, btn, orig, 'A message is required.'); return; }
-        if (get('message').length > 2000)           { showErr(contactForm, btn, orig, 'Message is too long (max 2000 characters).'); return; }
-
-        const rl = clientRateLimit('contact');
-        if (!rl.ok) { showErr(contactForm, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
-
-        if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
-        try {
-          const res = await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(new FormData(contactForm)).toString()
-          });
-          if (!res.ok) throw new Error();
-          showSuccess(contactForm.closest('.glass') || contactForm);
-        } catch {
-          showErr(contactForm, btn, orig, 'Something went wrong \u2014 please try again.');
-        }
-      });
-    }
-
-  }); // end DOMContentLoaded
+      if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
+      try {
+        const res = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form)).toString()
+        });
+        if (!res.ok) throw new Error();
+        showSuccess(form.closest('.glass') || form);
+      } catch {
+        showErr(form, btn, orig, 'Something went wrong \u2014 please try again.');
+      }
+    }, { capture: true });
+  })();
 
   // Wrap each character of the hero title in a span for letter-by-letter highlighting
   const heroTitle = document.getElementById('hero-title');
