@@ -1,40 +1,19 @@
-# ============================================================
-#  STRYD Orthopedics — Netlify configuration
-# ============================================================
+# STRYD Orthopedics — Netlify configuration
 
-# ---------- Build settings ----------
 [build]
   publish = "."
 
-# ---------- Security headers (all routes) ----------
 [[headers]]
   for = "/*"
   [headers.values]
-    # Prevent clickjacking — no framing allowed
     X-Frame-Options = "DENY"
-
-    # Block MIME-type sniffing
     X-Content-Type-Options = "nosniff"
-
-    # Limit referrer info sent cross-origin
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-    # Restrict browser features
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=()"
-
-    # Force HTTPS for 1 year (set after confirming HTTPS works)
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-
-    # Content Security Policy
-    # unsafe-inline required for inline styles (design system uses style attributes extensively)
-    # unsafe-inline scripts required for existing inline <script> blocks
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none';"
 
-    # Remove server info
-    X-Powered-By = ""
-
-# ---------- Redirect: remove trailing slashes ----------
 [[redirects]]
   from = "/index"
-  to   = "/"
+  to = "/"
   status = 301
