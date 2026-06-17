@@ -170,6 +170,38 @@
     box-shadow: 0 0 32px rgba(100,180,55,0.30), inset 0 1px 0 rgba(180,240,120,0.30);
     color: #e8ffd4;
   }
+
+  /* --- Mobile: compact tile at top so sleeve is fully visible --- */
+  @media (max-width: 768px) {
+    .mil-content {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      bottom: auto;
+      width: auto;
+      padding: 0;
+      align-items: stretch;
+    }
+    .mil-tile {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 18px;
+    }
+    .mil-tile > * { flex-shrink: 0; }
+    .mil-heading { font-size: 18px; flex: 1 1 auto; }
+    .mil-body { display: none; }
+    .mil-status { margin-bottom: 0 !important; }
+    .mil-tile > div[style*="flex:1"] { display: none; }
+    .mil-btn { padding: 10px 18px; font-size: 11px; white-space: nowrap; }
+  }
+  @media (max-width: 480px) {
+    .mil-tile { padding: 12px 14px; gap: 8px; }
+    .mil-heading { font-size: 16px; }
+    .mil-btn { padding: 9px 14px; font-size: 10px; }
+  }
 </style>
 </head>
 <body class="mil-page">
@@ -181,7 +213,7 @@
       <img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
     </a>
     <div class="nav-links">
-      <a href="index.html">Main</a>
+      <a href="index.html">Home</a>
       <a href="pt.html">PT</a>
       <a href="athletics.html">Athletes</a>
       <a href="military.html" class="active">Military</a>

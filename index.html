@@ -26,7 +26,7 @@
       <img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
     </a>
     <div class="nav-links">
-      <a href="index.html" class="active">Main</a>
+      <a href="index.html" class="active">Home</a>
       <a href="pt.html">PT</a>
       <a href="athletics.html">Athletes</a>
       <a href="military.html">Military</a>
@@ -42,7 +42,7 @@
 
 <div class="mobile-drawer">
   <button class="close" aria-label="Close menu">&times;</button>
-  <a href="index.html">Main</a>
+  <a href="index.html">Home</a>
   <a href="pt.html">PT</a>
   <a href="athletics.html">Athletes</a>
   <a href="military.html">Military</a>
@@ -81,7 +81,7 @@
   <div class="container" style="display:flex;flex-direction:column;gap:16px;">
 
     <!-- For who glass card -->
-    <div class="glass reveal" style="padding:28px 32px;">
+    <div class="glass reveal forwho-card" style="padding:28px 32px;">
       <div class="tabs-bubble audience-tabs">
         <button class="audience-tab active">Physical Therapists</button>
         <button class="audience-tab">Athletes</button>
@@ -105,7 +105,7 @@
     </div>
 
     <!-- Video glass card -->
-    <div class="glass reveal" style="overflow:hidden;padding:0;border-radius:var(--radius-lg);">
+    <div class="glass reveal demo-video-tile" style="overflow:hidden;padding:0;border-radius:var(--radius-lg);">
       <video src="assets/videos/ProductDemoVideo.mp4" autoplay muted loop playsinline style="display:block;width:140%;margin-left:-20%;height:auto;"></video>
     </div>
 
@@ -302,19 +302,23 @@ window.STRYD = window.STRYD || {};
         });
         if (!res.ok) throw new Error('Network error');
 
-        // Replace form with success message (DOM-safe, no innerHTML with user data)
+        // Animated green tick success state
         const wrap = document.createElement('div');
-        wrap.style.cssText = 'text-align:center;padding:32px 0;';
-        const check = document.createElement('div');
-        check.style.cssText = 'font-size:32px;margin-bottom:12px;';
-        check.textContent = '✓';
-        const heading = document.createElement('div');
-        heading.style.cssText = 'font-size:18px;font-weight:600;color:#fff;margin-bottom:8px;';
-        heading.textContent = 'Sent!';
-        const sub = document.createElement('div');
-        sub.style.cssText = 'color:var(--c-gray-400);font-size:14px;';
-        sub.textContent = "We'll be in touch soon.";
-        wrap.append(check, heading, sub);
+        wrap.style.cssText = 'text-align:center;padding:48px 24px;';
+        wrap.innerHTML = `
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="margin-bottom:20px;">
+            <circle cx="36" cy="36" r="33"
+              stroke="#22c55e" stroke-width="2.5"
+              stroke-dasharray="207.3" stroke-dashoffset="207.3"
+              style="animation:circleIn 0.55s cubic-bezier(.4,0,.2,1) forwards;"/>
+            <polyline points="22,36 31,46 52,26"
+              stroke="#22c55e" stroke-width="3.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              stroke-dasharray="44" stroke-dashoffset="44"
+              style="animation:checkIn 0.35s 0.45s cubic-bezier(.4,0,.2,1) forwards;"/>
+          </svg>
+          <div style="font-size:20px;font-weight:600;color:#fff;margin-bottom:8px;">Sent!</div>
+          <div style="color:var(--c-gray-400);font-size:14px;">We\u2019ll be in touch soon.</div>`;
         form.replaceWith(wrap);
       } catch {
         if (btn) { btn.textContent = origText; btn.disabled = false; }

@@ -740,11 +740,47 @@ select.input option {
   .nav-burger { display: flex; }
   .exploded-view { flex-direction: column; }
   .layer-separator { padding-bottom: 0; }
+
+  /* For-who glass card — reduce padding */
+  .forwho-card { padding: 20px 18px !important; }
+
+  /* Tabs bubble — stack to 1 column */
+  .tabs-bubble {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+  }
+  .tabs-bubble .audience-tab {
+    padding: 12px 14px !important;
+    font-size: 11px !important;
+  }
+
+  /* Demo video tile — keep bubble radius, full width crop */
+  .demo-video-tile {
+    border-radius: 16px !important;
+  }
+  .demo-video-tile video {
+    width: 120% !important;
+    margin-left: -10% !important;
+  }
 }
 @media (max-width: 480px) {
   .spec-grid { grid-template-columns: 1fr; }
   .hero-cta { flex-direction: column; align-items: stretch; }
   .hero-cta .btn { width: 100%; }
+
+  /* Tabs bubble — tighten further on very small screens */
+  .tabs-bubble .audience-tab { font-size: 10px !important; padding: 11px 12px !important; }
+}
+
+/* ---------- Form success animation ---------- */
+@keyframes circleIn {
+  from { stroke-dashoffset: 188.5; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes checkIn {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0; }
 }
 
 /* ---------- 20. REDUCED MOTION ---------- */
