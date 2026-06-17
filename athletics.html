@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRYD — For Athletes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/stryd.css">
+<link rel="icon" type="image/png" href="assets/images/favicon.png">
+<link rel="apple-touch-icon" href="assets/images/favicon.png">
+</head>
+<body class="glow-on">
+
+<div class="ambient">
+  <div class="grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container">
+    <a class="logo" href="index.html">
+      <img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Main</a>
+      <a href="pt.html">PT</a>
+      <a href="athletics.html" class="active">Athletes</a>
+      <a href="military.html">Military</a>
+    </div>
+    <div class="nav-right">
+      <a href="index.html#waitlist" class="btn btn-primary" style="padding:9px 18px;">Join Waitlist</a>
+      <button class="nav-burger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-drawer">
+  <button class="close" aria-label="Close menu">&times;</button>
+  <a href="index.html">Main</a>
+  <a href="pt.html">PT</a>
+  <a href="athletics.html">Athletes</a>
+  <a href="military.html">Military</a>
+  <a href="index.html#waitlist" class="btn btn-primary">Join Waitlist</a>
+</div>
+
+<!-- 01 HERO -->
+<header class="hero section-black">
+  <div class="container">
+    <div class="hero-inner">
+      <span class="eyebrow reveal in">For Athletes</span>
+      <h1 class="reveal in" style="font-size:var(--text-display);margin-bottom:22px;">
+        Train at the edge.<br>Never over it.
+      </h1>
+      <div class="emg-wrap reveal in">
+        <canvas id="emg-ath" class="emg-canvas"></canvas>
+        <div class="emg-label">Know Before It Breaks</div>
+      </div>
+      <p class="lead reveal in" style="margin-bottom:38px;">
+        Asymmetry, load and recovery — read in real time, so you know you're at risk before injury happens.
+      </p>
+      <div class="hero-cta reveal in">
+        <a href="index.html#waitlist" class="btn btn-primary">Join Waitlist</a>
+        <a href="#prevent" class="btn btn-ghost">Learn More <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 02 INJURY PREVENTION -->
+<section id="prevent" class="section section-dark">
+  <div class="container">
+    <div class="feature-split">
+      <div class="feature-content reveal from-left">
+        <span class="eyebrow">Injury Prevention</span>
+        <h2 style="margin-bottom:18px;">Know when you're at risk — so you can prevent it</h2>
+        <p class="lead">The sleeve flags asymmetry the moment it crosses your threshold. Catch the compensation pattern before it becomes a tear.</p>
+      </div>
+      <div class="feature-visual reveal from-right">
+        <div class="stack-cards">
+          <div class="glass card">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <div class="data-value">12%</div>
+              <span class="chip" style="color:#ff6b6b;border-color:rgba(255,107,107,0.3);">
+                <span class="dot" style="background:#ff6b6b;box-shadow:0 0 8px #ff6b6b;"></span>Flagged
+              </span>
+            </div>
+            <div class="data-label" style="margin-top:8px;">Asymmetry index · above threshold</div>
+          </div>
+          <div class="glass card">
+            <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+              <span class="data-label">Quad balance</span>
+              <span class="data-label" style="color:var(--c-brand);">64%</span>
+            </div>
+            <div class="progress-track reveal">
+              <div class="progress-fill" data-w="64%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 REAL TIME INSIGHTS -->
+<section class="section" style="background:#1a1a1a;">
+  <div class="container">
+    <div class="feature-split reversed">
+      <div class="feature-content reveal from-right">
+        <span class="eyebrow">Real Time Insights</span>
+        <h2 style="margin-bottom:18px;">Know how you're recovering in real time</h2>
+        <p class="lead">Activation, range of motion and symmetry — the numbers a sports-medicine team reads, now in your own hands between sessions.</p>
+      </div>
+      <div class="feature-visual reveal from-left">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="glass card"><div class="data-value">84%</div><div class="data-label">VMO</div></div>
+          <div class="glass card"><div class="data-value">71%</div><div class="data-label">Hamstring</div></div>
+          <div class="glass card"><div class="data-value">118°</div><div class="data-label">ROM</div></div>
+          <div class="glass card"><div class="data-value">Good</div><div class="data-label">Symmetry</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 CLINICIAN IN THE LOOP -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="feature-split">
+      <div class="feature-content reveal from-left">
+        <span class="eyebrow">Clinician in the Loop</span>
+        <h2 style="margin-bottom:18px;">Your team doc, in your pocket whenever you need them</h2>
+        <p class="lead">Your data goes straight to the people who treat you. When something looks off, they see it too — and reach out before you push through it.</p>
+        <div style="margin-top:28px;">
+          <a href="index.html#waitlist" class="btn btn-primary">Join Waitlist</a>
+        </div>
+      </div>
+      <div class="feature-visual reveal from-right">
+        <div class="stack-cards">
+          <div class="glass card" style="display:flex;align-items:center;gap:16px;">
+            <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--c-brand),var(--c-brand-active));flex-shrink:0;box-shadow:0 0 20px rgba(10,122,255,0.4);"></div>
+            <div>
+              <div style="color:#fff;font-weight:500;">Dr. Reyes, DPT</div>
+              <div class="data-label" style="margin-top:4px;">Sports medicine · reviewing</div>
+            </div>
+          </div>
+          <div class="glass card">
+            <div class="data-value" style="font-size:18px;">Always available</div>
+            <div class="data-label" style="margin-top:6px;">Your team doc, on call</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 CTA -->
+<section class="section section-black" style="text-align:center;">
+  <div class="container">
+    <h2 class="reveal in" style="font-size:var(--text-h1);max-width:16ch;margin:0 auto 30px;">
+      Your clinician, in your pocket
+    </h2>
+    <a href="index.html#waitlist" class="btn btn-primary reveal in">Join Waitlist</a>
+  </div>
+</section>
+
+<footer class="footer section-dark">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <a class="logo" href="index.html"><img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;"></a>
+      <div class="social">
+        <a href="https://www.linkedin.com/company/stryd-orthopedics-inc/" target="_blank" rel="noopener" aria-label="LinkedIn" style="font-family:var(--font-mono);font-size:10px;font-weight:700;">in</a>
+        <a href="https://www.instagram.com/stryd.orthopedics" target="_blank" rel="noopener" aria-label="Instagram" style="font-size:14px;">◎</a>
+        <a href="https://www.tiktok.com/@stryd.orthopedics" target="_blank" rel="noopener" aria-label="TikTok" style="font-family:var(--font-mono);font-size:10px;font-weight:700;">tt</a>
+      </div>
+    </div>
+    <p class="legal">© 2026 STRYD Orthopedics, Inc.</p>
+  </div>
+</footer>
+
+<script>
+window.STRYD = window.STRYD || {};
+</script>
+<script src="assets/stryd.js"></script>
+<script>
+  window.STRYD.waveSpeed = 0.9;
+  STRYDinit();
+  initTweaks({ glassBlur: 24, glassAlpha: 0.07, depth: 1.0, waveSpeed: 0.9, glow: true });
+  createEMGWaveform('emg-ath', { lineColor: '#FFFFFF', pauseOnHover: true });
+</script>
+</body>
+</html>
