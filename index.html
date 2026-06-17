@@ -304,16 +304,32 @@ window.STRYD = window.STRYD || {};
     setTimeout(() => el.remove(), 6000);
   }
 
-  /* ---- Form submissions → Netlify Function (server-side validation + rate limit) ---- */
+  /* ---- Form submissions — two-step: validate → store ---- *
+   *
+   * Step 1: POST to our Netlify Function for server-side rate limiting
+   *         and validation. Returns JSON {success} or {error}.
+   * Step 2: On success, POST directly to '/' so Netlify stores the entry
+   *         as a *verified* submission in the dashboard.
+   *
+   * We also remove data-netlify from the DOM synchronously here (our
+   * <script> runs before DOMContentLoaded, before Netlify's injected
+   * <head> script fires) — this prevents Netlify's runtime from hooking
+   * the forms and showing their success banner.
+   * ------------------------------------------------------------------- */
   document.querySelectorAll('form[data-netlify="true"]').forEach(form => {
+    // Remove attr before Netlify's DOMContentLoaded listener can find it
+    form.removeAttribute('data-netlify');
+    form.removeAttribute('netlify');
+
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const formName = form.getAttribute('name') || 'form';
       const btn      = form.querySelector('[type="submit"]');
       const origText = btn ? btn.textContent : '';
+      const body     = new URLSearchParams(new FormData(form)).toString();
 
-      // Client-side rate limit (fast-fail before network request)
+      // Client-side rate limit (fast-fail, no network round-trip needed)
       const rl = clientRateLimit(formName);
       if (!rl.allowed) {
         showFormError(form, btn, origText,
@@ -324,19 +340,28 @@ window.STRYD = window.STRYD || {};
       if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
 
       try {
+        // Step 1 — server-side validation + IP rate limit
         const res  = await fetch('/.netlify/functions/submit', {
           method:  'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body:    new URLSearchParams(new FormData(form)).toString(),
+          body,
         });
         const data = await res.json().catch(() => ({}));
 
-        if (res.ok && data.success) {
-          showFormSuccess(form);
-        } else {
+        if (!res.ok || !data.success) {
           showFormError(form, btn, origText,
             data.error || 'Something went wrong \u2014 please try again.');
+          return;
         }
+
+        // Step 2 — submit directly to Netlify so it's stored as verified
+        await fetch('/', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+        });
+
+        showFormSuccess(form);
       } catch {
         showFormError(form, btn, origText, 'Connection error \u2014 please try again.');
       }

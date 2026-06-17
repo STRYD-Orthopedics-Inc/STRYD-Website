@@ -104,19 +104,8 @@ exports.handler = async (event) => {
     }
   }
 
-  // Forward to Netlify Forms so submissions appear in the dashboard
-  // (Netlify detects forms at build-time via data-netlify="true" in HTML;
-  //  submitting to SITE_URL/ at runtime stores the entry.)
-  try {
-    await fetch(SITE_URL + '/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: event.body,
-    });
-  } catch (err) {
-    console.error('[submit] Netlify Forms forward error:', err.message);
-    // Don't fail the user — log and continue
-  }
-
+  // Validation passed — return success.
+  // The client will then POST directly to '/' so Netlify stores the submission
+  // as a verified entry in the dashboard (server-to-server POSTs are flagged unverified).
   return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
 };
