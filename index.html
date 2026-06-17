@@ -256,17 +256,17 @@ window.STRYD = window.STRYD || {};
   STRYDinit();
   initTweaks({ glassBlur: 24, glassAlpha: 0.07, depth: 1.0, waveSpeed: 0.9, glow: true });
 
-  /* ---- Rate limiting — 3 submissions per form per hour (localStorage) ---- */
-  function checkRateLimit(formName) {
-    const key     = 'stryd-rl-' + formName;
-    const windowMs = 60 * 60 * 1000; // 1 hour
-    const maxHits  = 3;
-    const now      = Date.now();
+  /* ---- Client-side rate limit (extra layer on top of server-side) ---- */
+  function clientRateLimit(formName) {
+    const key = 'stryd-rl-' + formName;
+    const WIN = 60 * 60 * 1000;
+    const MAX = 5;
+    const now = Date.now();
     let times = [];
     try { times = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
-    times = times.filter(t => now - t < windowMs); // drop expired
-    if (times.length >= maxHits) {
-      const waitMin = Math.ceil((windowMs - (now - times[0])) / 60000);
+    times = times.filter(t => now - t < WIN);
+    if (times.length >= MAX) {
+      const waitMin = Math.ceil((WIN - (now - times[0])) / 60000);
       return { allowed: false, waitMin };
     }
     times.push(now);
@@ -274,59 +274,71 @@ window.STRYD = window.STRYD || {};
     return { allowed: true };
   }
 
-  /* ---- Netlify Forms — AJAX submission with inline success / rate-limit state ---- */
+  /* ---- Animated green tick success state ---- */
+  function showFormSuccess(form) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'text-align:center;padding:48px 24px;';
+    wrap.innerHTML = `
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="margin-bottom:20px;">
+        <circle cx="36" cy="36" r="33"
+          stroke="#22c55e" stroke-width="2.5"
+          stroke-dasharray="207.3" stroke-dashoffset="207.3"
+          style="animation:circleIn 0.55s cubic-bezier(.4,0,.2,1) forwards;"/>
+        <polyline points="22,36 31,46 52,26"
+          stroke="#22c55e" stroke-width="3.5"
+          stroke-linecap="round" stroke-linejoin="round"
+          stroke-dasharray="44" stroke-dashoffset="44"
+          style="animation:checkIn 0.35s 0.45s cubic-bezier(.4,0,.2,1) forwards;"/>
+      </svg>
+      <div style="font-size:20px;font-weight:600;color:#fff;margin-bottom:8px;">Sent!</div>
+      <div style="color:var(--c-gray-400);font-size:14px;">We\u2019ll be in touch soon.</div>`;
+    form.replaceWith(wrap);
+  }
+
+  function showFormError(form, btn, origText, msg) {
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+    const el = document.createElement('p');
+    el.style.cssText = 'color:#ff6b6b;font-size:13px;margin-top:10px;text-align:center;';
+    el.textContent   = msg;
+    form.appendChild(el);
+    setTimeout(() => el.remove(), 6000);
+  }
+
+  /* ---- Form submissions → Netlify Function (server-side validation + rate limit) ---- */
   document.querySelectorAll('form[data-netlify="true"]').forEach(form => {
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+
       const formName = form.getAttribute('name') || 'form';
       const btn      = form.querySelector('[type="submit"]');
       const origText = btn ? btn.textContent : '';
 
-      // Rate limit check
-      const rl = checkRateLimit(formName);
+      // Client-side rate limit (fast-fail before network request)
+      const rl = clientRateLimit(formName);
       if (!rl.allowed) {
-        const msg = document.createElement('p');
-        msg.style.cssText = 'color:#ff6b6b;font-size:13px;margin-top:10px;text-align:center;';
-        msg.textContent   = `Too many submissions — please wait ${rl.waitMin} minute${rl.waitMin !== 1 ? 's' : ''} before trying again.`;
-        form.appendChild(msg);
-        setTimeout(() => msg.remove(), 5000);
+        showFormError(form, btn, origText,
+          `Too many submissions \u2014 please wait ${rl.waitMin} minute${rl.waitMin !== 1 ? 's' : ''}.`);
         return;
       }
 
-      if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
-      try {
-        const res = await fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(new FormData(form)).toString()
-        });
-        if (!res.ok) throw new Error('Network error');
+      if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
 
-        // Animated green tick success state
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'text-align:center;padding:48px 24px;';
-        wrap.innerHTML = `
-          <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="margin-bottom:20px;">
-            <circle cx="36" cy="36" r="33"
-              stroke="#22c55e" stroke-width="2.5"
-              stroke-dasharray="207.3" stroke-dashoffset="207.3"
-              style="animation:circleIn 0.55s cubic-bezier(.4,0,.2,1) forwards;"/>
-            <polyline points="22,36 31,46 52,26"
-              stroke="#22c55e" stroke-width="3.5"
-              stroke-linecap="round" stroke-linejoin="round"
-              stroke-dasharray="44" stroke-dashoffset="44"
-              style="animation:checkIn 0.35s 0.45s cubic-bezier(.4,0,.2,1) forwards;"/>
-          </svg>
-          <div style="font-size:20px;font-weight:600;color:#fff;margin-bottom:8px;">Sent!</div>
-          <div style="color:var(--c-gray-400);font-size:14px;">We\u2019ll be in touch soon.</div>`;
-        form.replaceWith(wrap);
+      try {
+        const res  = await fetch('/.netlify/functions/submit', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body:    new URLSearchParams(new FormData(form)).toString(),
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success) {
+          showFormSuccess(form);
+        } else {
+          showFormError(form, btn, origText,
+            data.error || 'Something went wrong \u2014 please try again.');
+        }
       } catch {
-        if (btn) { btn.textContent = origText; btn.disabled = false; }
-        const msg = document.createElement('p');
-        msg.style.cssText = 'color:#ff6b6b;font-size:13px;margin-top:10px;text-align:center;';
-        msg.textContent   = 'Something went wrong — please try again.';
-        form.appendChild(msg);
-        setTimeout(() => msg.remove(), 5000);
+        showFormError(form, btn, origText, 'Connection error \u2014 please try again.');
       }
     });
   });
