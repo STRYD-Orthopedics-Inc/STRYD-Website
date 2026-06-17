@@ -758,6 +758,10 @@ select.input option {
   /* Demo video tile — keep bubble radius, full width crop */
   .demo-video-tile {
     border-radius: 16px !important;
+    /* Force GPU compositing so overflow:hidden clips correctly on iOS Safari */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
   }
   .demo-video-tile video {
     width: 120% !important;

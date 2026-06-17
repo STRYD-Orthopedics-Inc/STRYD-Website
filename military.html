@@ -171,7 +171,7 @@
     color: #e8ffd4;
   }
 
-  /* --- Mobile: compact tile at top so sleeve is fully visible --- */
+  /* --- Mobile: single-row "In Development  →  Request Demo" strip --- */
   @media (max-width: 768px) {
     .mil-content {
       position: absolute;
@@ -185,22 +185,24 @@
     }
     .mil-tile {
       flex-direction: row;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
-      padding: 16px 18px;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
     }
-    .mil-tile > * { flex-shrink: 0; }
-    .mil-heading { font-size: 18px; flex: 1 1 auto; }
-    .mil-body { display: none; }
-    .mil-status { margin-bottom: 0 !important; }
-    .mil-tile > div[style*="flex:1"] { display: none; }
-    .mil-btn { padding: 10px 18px; font-size: 11px; white-space: nowrap; }
+    /* Hide everything except heading and button */
+    .mil-status,
+    .mil-divider,
+    .mil-body,
+    .mil-tile > div[style*="flex:1"] { display: none !important; }
+    /* Heading on one line — suppress the <br> */
+    .mil-heading { font-size: 17px; white-space: nowrap; flex: 1 1 auto; }
+    .mil-heading br { display: none; }
+    .mil-btn { padding: 10px 16px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
   }
   @media (max-width: 480px) {
-    .mil-tile { padding: 12px 14px; gap: 8px; }
-    .mil-heading { font-size: 16px; }
-    .mil-btn { padding: 9px 14px; font-size: 10px; }
+    .mil-heading { font-size: 15px; }
+    .mil-btn { padding: 9px 13px; font-size: 10px; }
   }
 </style>
 </head>
@@ -229,7 +231,7 @@
 
 <div class="mobile-drawer">
   <button class="close" aria-label="Close menu">&times;</button>
-  <a href="index.html">Main</a>
+  <a href="index.html">Home</a>
   <a href="pt.html">PT</a>
   <a href="athletics.html">Athletes</a>
   <a href="military.html">Military</a>
@@ -245,7 +247,7 @@
         <span class="mil-status-dot"></span>
         Program Status
       </div>
-      <div style="height:1px;background:rgba(80,160,60,0.20);"></div>
+      <div class="mil-divider" style="height:1px;background:rgba(80,160,60,0.20);"></div>
       <h1 class="mil-heading">In<br><span>Development</span></h1>
       <p class="mil-body">A dedicated program for defense and tactical applications is underway. Details are not public at this time.</p>
       <div style="flex:1;"></div>
