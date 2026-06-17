@@ -256,117 +256,122 @@ window.STRYD = window.STRYD || {};
   STRYDinit();
   initTweaks({ glassBlur: 24, glassAlpha: 0.07, depth: 1.0, waveSpeed: 0.9, glow: true });
 
-  /* ---- Client-side rate limit (extra layer on top of server-side) ---- */
-  function clientRateLimit(formName) {
-    const key = 'stryd-rl-' + formName;
-    const WIN = 60 * 60 * 1000;
-    const MAX = 5;
-    const now = Date.now();
-    let times = [];
-    try { times = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
-    times = times.filter(t => now - t < WIN);
-    if (times.length >= MAX) {
-      const waitMin = Math.ceil((WIN - (now - times[0])) / 60000);
-      return { allowed: false, waitMin };
-    }
-    times.push(now);
-    try { localStorage.setItem(key, JSON.stringify(times)); } catch {}
-    return { allowed: true };
+  /* ================================================================
+     FORM HANDLING — mirrors the V2 approach that is confirmed working:
+     e.preventDefault() → fetch POST to '/' → green tick on success.
+     data-netlify stays in the DOM so Netlify stores verified entries.
+     Client-side rate limiting (localStorage) guards against repeat hits.
+     Server-side rate limiting + validation runs in the Netlify Function
+     as a background layer but is NOT in the critical path here.
+     ================================================================ */
+
+  function isValidEmail(v) {
+    return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/.test(String(v || ''));
   }
 
-  /* ---- Animated green tick success state ---- */
-  function showFormSuccess(form) {
+  // Client-side rate limit — 5 per hour per form
+  function clientRateLimit(name) {
+    const key = 'stryd-rl-' + name, WIN = 3600000, MAX = 5, now = Date.now();
+    let t = []; try { t = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
+    t = t.filter(x => now - x < WIN);
+    if (t.length >= MAX) return { ok: false, wait: Math.ceil((WIN - (now - t[0])) / 60000) };
+    t.push(now); try { localStorage.setItem(key, JSON.stringify(t)); } catch {}
+    return { ok: true };
+  }
+
+  function showSuccess(target) {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'text-align:center;padding:48px 24px;';
     wrap.innerHTML = `
       <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="margin-bottom:20px;">
-        <circle cx="36" cy="36" r="33"
-          stroke="#22c55e" stroke-width="2.5"
+        <circle cx="36" cy="36" r="33" stroke="#22c55e" stroke-width="2.5"
           stroke-dasharray="207.3" stroke-dashoffset="207.3"
           style="animation:circleIn 0.55s cubic-bezier(.4,0,.2,1) forwards;"/>
-        <polyline points="22,36 31,46 52,26"
-          stroke="#22c55e" stroke-width="3.5"
+        <polyline points="22,36 31,46 52,26" stroke="#22c55e" stroke-width="3.5"
           stroke-linecap="round" stroke-linejoin="round"
           stroke-dasharray="44" stroke-dashoffset="44"
           style="animation:checkIn 0.35s 0.45s cubic-bezier(.4,0,.2,1) forwards;"/>
       </svg>
       <div style="font-size:20px;font-weight:600;color:#fff;margin-bottom:8px;">Sent!</div>
       <div style="color:var(--c-gray-400);font-size:14px;">We\u2019ll be in touch soon.</div>`;
-    form.replaceWith(wrap);
+    target.replaceWith(wrap);
   }
 
-  function showFormError(form, btn, origText, msg) {
-    if (btn) { btn.textContent = origText; btn.disabled = false; }
-    const el = document.createElement('p');
-    el.style.cssText = 'color:#ff6b6b;font-size:13px;margin-top:10px;text-align:center;';
-    el.textContent   = msg;
-    form.appendChild(el);
-    setTimeout(() => el.remove(), 6000);
+  function showErr(form, btn, orig, msg) {
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+    const p = document.createElement('p');
+    p.style.cssText = 'color:#ff6b6b;font-size:13px;margin-top:10px;text-align:center;';
+    p.textContent = msg;
+    form.appendChild(p);
+    setTimeout(() => p.remove(), 6000);
   }
 
-  /* ---- Form submissions — two-step: validate → store ---- *
-   *
-   * Step 1: POST to our Netlify Function for server-side rate limiting
-   *         and validation. Returns JSON {success} or {error}.
-   * Step 2: On success, POST directly to '/' so Netlify stores the entry
-   *         as a *verified* submission in the dashboard.
-   *
-   * We also remove data-netlify from the DOM synchronously here (our
-   * <script> runs before DOMContentLoaded, before Netlify's injected
-   * <head> script fires) — this prevents Netlify's runtime from hooking
-   * the forms and showing their success banner.
-   * ------------------------------------------------------------------- */
-  document.querySelectorAll('form[data-netlify="true"]').forEach(form => {
-    // Remove attr before Netlify's DOMContentLoaded listener can find it
-    form.removeAttribute('data-netlify');
-    form.removeAttribute('netlify');
+  document.addEventListener('DOMContentLoaded', () => {
 
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
+    /* --- Waitlist form --- */
+    const waitlistForm = document.querySelector('form[name="waitlist"]');
+    if (waitlistForm) {
+      waitlistForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn  = waitlistForm.querySelector('[type="submit"]');
+        const orig = btn ? btn.textContent : '';
+        const email = (waitlistForm.querySelector('[name="email"]')?.value || '').trim();
 
-      const formName = form.getAttribute('name') || 'form';
-      const btn      = form.querySelector('[type="submit"]');
-      const origText = btn ? btn.textContent : '';
-      const body     = new URLSearchParams(new FormData(form)).toString();
+        if (!isValidEmail(email)) { showErr(waitlistForm, btn, orig, 'Please enter a valid email address.'); return; }
 
-      // Client-side rate limit (fast-fail, no network round-trip needed)
-      const rl = clientRateLimit(formName);
-      if (!rl.allowed) {
-        showFormError(form, btn, origText,
-          `Too many submissions \u2014 please wait ${rl.waitMin} minute${rl.waitMin !== 1 ? 's' : ''}.`);
-        return;
-      }
+        const rl = clientRateLimit('waitlist');
+        if (!rl.ok) { showErr(waitlistForm, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
 
-      if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
-
-      try {
-        // Step 1 — server-side validation + IP rate limit
-        const res  = await fetch('/.netlify/functions/submit', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body,
-        });
-        const data = await res.json().catch(() => ({}));
-
-        if (!res.ok || !data.success) {
-          showFormError(form, btn, origText,
-            data.error || 'Something went wrong \u2014 please try again.');
-          return;
+        if (btn) { btn.textContent = 'Submitting\u2026'; btn.disabled = true; }
+        try {
+          const res = await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(new FormData(waitlistForm)).toString()
+          });
+          if (!res.ok) throw new Error();
+          showSuccess(waitlistForm);
+        } catch {
+          showErr(waitlistForm, btn, orig, 'Something went wrong \u2014 please try again.');
         }
+      });
+    }
 
-        // Step 2 — submit directly to Netlify so it's stored as verified
-        await fetch('/', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body,
-        });
+    /* --- Contact form --- */
+    const contactForm = document.querySelector('form[name="contact"]');
+    if (contactForm) {
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn  = contactForm.querySelector('[type="submit"]');
+        const orig = btn ? btn.textContent : '';
+        const get  = n => (contactForm.querySelector(`[name="${n}"]`)?.value || '').trim();
+        const ROLES = ['clinician','patient','investor','partner','researcher','other'];
 
-        showFormSuccess(form);
-      } catch {
-        showFormError(form, btn, origText, 'Connection error \u2014 please try again.');
-      }
-    });
-  });
+        if (!get('firstName') || !get('lastName')) { showErr(contactForm, btn, orig, 'First and last name are required.'); return; }
+        if (!isValidEmail(get('email')))            { showErr(contactForm, btn, orig, 'Please enter a valid email address.'); return; }
+        if (!ROLES.includes(get('role')))           { showErr(contactForm, btn, orig, 'Please select your role.'); return; }
+        if (!get('message'))                        { showErr(contactForm, btn, orig, 'A message is required.'); return; }
+        if (get('message').length > 2000)           { showErr(contactForm, btn, orig, 'Message is too long (max 2000 characters).'); return; }
+
+        const rl = clientRateLimit('contact');
+        if (!rl.ok) { showErr(contactForm, btn, orig, `Too many submissions \u2014 please wait ${rl.wait} min.`); return; }
+
+        if (btn) { btn.textContent = 'Sending\u2026'; btn.disabled = true; }
+        try {
+          const res = await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(new FormData(contactForm)).toString()
+          });
+          if (!res.ok) throw new Error();
+          showSuccess(contactForm.closest('.glass') || contactForm);
+        } catch {
+          showErr(contactForm, btn, orig, 'Something went wrong \u2014 please try again.');
+        }
+      });
+    }
+
+  }); // end DOMContentLoaded
 
   // Wrap each character of the hero title in a span for letter-by-letter highlighting
   const heroTitle = document.getElementById('hero-title');
