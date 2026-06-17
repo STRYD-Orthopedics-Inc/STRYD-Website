@@ -122,7 +122,7 @@
         <span class="eyebrow" style="justify-content:center;">Early Access</span>
         <h2 style="margin-bottom:14px;">Be First to Experience<br>Informed Recovery</h2>
         <p style="color:var(--c-gray-400);margin-bottom:32px;max-width:38ch;margin-left:auto;margin-right:auto;">Join the waitlist to get early access and be part of the future of at-home rehabilitation.</p>
-        <form name="waitlist" data-netlify="true" netlify-honeypot="website" style="text-align:left;">
+        <form name="waitlist" style="text-align:left;">
           <input type="hidden" name="form-name" value="waitlist">
           <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none;">
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -189,7 +189,7 @@
       <!-- Right: contact form -->
       <div class="reveal from-right" style="flex:1;">
         <div class="glass card-pad-lg" style="border-radius:16px;">
-          <form name="contact" data-netlify="true" netlify-honeypot="website" style="display:grid;gap:14px;">
+          <form name="contact" style="display:grid;gap:14px;">
             <input type="hidden" name="form-name" value="contact">
             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none;">
 
@@ -246,6 +246,17 @@
     </div>
   </div>
 </section>
+
+<!-- Netlify Forms: build-time detection only — never shown, never submitted by user -->
+<div style="display:none" aria-hidden="true">
+  <form name="waitlist" data-netlify="true" netlify-honeypot="website">
+    <input name="form-name" value="waitlist"><input name="email"><input name="website">
+  </form>
+  <form name="contact" data-netlify="true" netlify-honeypot="website">
+    <input name="form-name" value="contact"><input name="firstName"><input name="lastName">
+    <input name="email"><select name="role"></select><input name="company"><textarea name="message"></textarea><input name="website">
+  </form>
+</div>
 
 <script>
 window.STRYD = window.STRYD || {};
