@@ -25,33 +25,24 @@
     background: rgba(11,26,8,0.92) !important;
     border-bottom: 1px solid rgba(80,160,60,0.15);
   }
+
+  /* ── Desktop: side-by-side ── */
   .mil-body-wrap {
     flex: 1;
-    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 20px;
+    padding: 24px;
     min-height: 0;
-    overflow: hidden;
   }
-  .mil-image-wrap {
-    position: absolute;
-    inset: 0;
-  }
-  .mil-image-wrap img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center center;
-  }
+
+  /* Left: info tile */
   .mil-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
     width: 300px;
+    flex-shrink: 0;
     display: flex;
     align-items: stretch;
-    padding: 24px 20px;
-    z-index: 2;
   }
   .mil-tile {
     width: 100%;
@@ -112,7 +103,6 @@
     text-transform: uppercase;
     letter-spacing: 0.14em;
     color: rgba(140,210,100,0.85);
-    margin-bottom: 20px;
   }
   .mil-status-dot {
     width: 7px;
@@ -171,17 +161,34 @@
     color: #e8ffd4;
   }
 
-  /* --- Mobile: single-row "In Development  →  Request Demo" strip --- */
+  /* Right: video bubble */
+  .mil-video-tile {
+    flex: 1;
+    min-width: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(80,160,60,0.18);
+    box-shadow: 0 0 40px rgba(60,140,30,0.10), 0 24px 60px rgba(0,0,0,0.55);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+  .mil-video-tile video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── Mobile: stack vertically ── */
   @media (max-width: 768px) {
+    .mil-body-wrap {
+      flex-direction: column;
+      gap: 14px;
+      padding: 12px 12px 32px;
+    }
     .mil-content {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: 16px;
-      bottom: auto;
-      width: auto;
-      padding: 0;
-      align-items: stretch;
+      width: 100%;
     }
     .mil-tile {
       flex-direction: row;
@@ -190,15 +197,20 @@
       gap: 12px;
       padding: 14px 18px;
     }
-    /* Hide everything except heading and button */
     .mil-status,
     .mil-divider,
     .mil-body,
     .mil-tile > div[style*="flex:1"] { display: none !important; }
-    /* Heading on one line — suppress the <br> */
     .mil-heading { font-size: 17px; white-space: nowrap; flex: 1 1 auto; }
     .mil-heading br { display: none; }
     .mil-btn { padding: 10px 16px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+    .mil-video-tile {
+      border-radius: 16px;
+      height: auto;
+    }
+    .mil-video-tile video {
+      height: auto;
+    }
   }
   @media (max-width: 480px) {
     .mil-heading { font-size: 15px; }
@@ -238,12 +250,13 @@
   <a href="index.html#contact" class="btn btn-primary">Request Demo</a>
 </div>
 
-<!-- LEFT TILE + RIGHT IMAGE -->
+<!-- SIDE-BY-SIDE CONTENT -->
 <div class="mil-body-wrap">
 
+  <!-- Left: info tile -->
   <div class="mil-content">
     <div class="mil-tile">
-      <div class="mil-status" style="margin:0;">
+      <div class="mil-status">
         <span class="mil-status-dot"></span>
         Program Status
       </div>
@@ -255,8 +268,9 @@
     </div>
   </div>
 
-  <div class="mil-image-wrap">
-    <img src="assets/images/MilitaryDemo.jpg" alt="STRYD Military Program">
+  <!-- Right: video bubble -->
+  <div class="mil-video-tile">
+    <video src="assets/videos/MilitaryDemoVideo.mp4" autoplay muted loop playsinline></video>
   </div>
 
 </div>
