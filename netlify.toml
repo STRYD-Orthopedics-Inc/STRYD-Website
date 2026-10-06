@@ -4,9 +4,109 @@
   publish = "."
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_VERSION = "20"
+
+# NOTE: environment variables set in this file are NOT available to functions at runtime (build only).
+# APP_ENV, SITE_URL, SUPABASE_*, CUSTOMERIO_*, POSTHOG_* etc. must be set in the Netlify UI / CLI, scoped per
+# deploy context (see docs/setup.md). APP_ENV=production ONLY on the Production context. If it is missing the
+# code treats the deploy as non-production (writes to *_test tables, sends no email, PostHog off).
+
 [functions]
   node_bundler = "esbuild"
 
+# Retry Customer.io syncs that failed (runs on the published/production deploy only).
+[functions."sync-retry"]
+  schedule = "*/15 * * * *"
+
+# ---------------------------------------------------------------------------
+# API + tracked links
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/api/config"
+  to = "/.netlify/functions/site-config"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/waitlist/confirm"
+  to = "/.netlify/functions/waitlist-confirm"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/waitlist/count"
+  to = "/.netlify/functions/waitlist-count"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/waitlist"
+  to = "/.netlify/functions/waitlist"
+  status = 200
+  force = true
+
+# /go/<slug> -> function looks the slug up in Supabase and 302s to the destination stored there.
+[[redirects]]
+  from = "/go/:slug"
+  to = "/.netlify/functions/go?slug=:slug"
+  status = 200
+  force = true
+
+# ---------------------------------------------------------------------------
+# Waitlist + legal pages (clean URLs)
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/waitlist"
+  to = "/waitlist.html"
+  status = 200
+
+[[redirects]]
+  from = "/waitlist/check-email"
+  to = "/waitlist-check-email.html"
+  status = 200
+
+[[redirects]]
+  from = "/waitlist/confirm"
+  to = "/waitlist-confirm.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+# ---------------------------------------------------------------------------
+# PostHog reverse proxy (first-party path so it is not blocked as third-party).
+# TODO(H2): these use the US region hosts. If the PostHog project is EU, change both to
+#   https://eu-assets.i.posthog.com/static/:splat  and  https://eu.i.posthog.com/:splat
+# The static-assets rule must stay above the catch-all.
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/ingest/static/*"
+  to = "https://us-assets.i.posthog.com/static/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ingest/*"
+  to = "https://us.i.posthog.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/index"
+  to = "/"
+  status = 301
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
 [[headers]]
   for = "/*"
   [headers.values]
@@ -15,9 +115,17 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
 
-[[redirects]]
-  from = "/index"
-  to = "/"
-  status = 301
+# The confirm page carries a one-time token in the URL: never send a Referer, never cache.
+[[headers]]
+  for = "/waitlist-confirm.html"
+  [headers.values]
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/waitlist/confirm"
+  [headers.values]
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-store"
