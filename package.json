@@ -1,0 +1,10 @@
+{
+  "name": "stryd-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "STRYD Orthopedics website + waitlist (static site, Netlify functions, Supabase, Customer.io, PostHog)",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\""
+  }
+}
