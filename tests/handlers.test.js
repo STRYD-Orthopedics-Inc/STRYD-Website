@@ -365,3 +365,23 @@ test('production never trusts the Host header or a preview origin', async () => 
     assert.equal((ctx.db.tables.waitlist_signups || []).length, 0);
   } finally { delete process.env.APP_ENV; }
 });
+
+test('/api/config: previews get yes/no env flags (never values); production gets none', async () => {
+  const { handler } = require('../netlify/functions/site-config');
+  process.env.SUPABASE_URL = 'https://abcdefgh.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOi.payload123.signature456';
+  try {
+    const pv = JSON.parse((await handler({ httpMethod: 'GET', headers: {} })).body);
+    assert.equal(pv.envCheck.supabase_url_looks_right, true);
+    assert.equal(pv.envCheck.service_key_looks_like_legacy_jwt, true);
+    assert.equal(pv.analytics, false);
+    const raw = JSON.stringify(pv);
+    assert.equal(raw.includes('abcdefgh'), false, 'must not leak the URL');
+    assert.equal(raw.includes('payload123'), false, 'must not leak the key');
+    process.env.APP_ENV = 'production';
+    const pr = JSON.parse((await handler({ httpMethod: 'GET', headers: {} })).body);
+    assert.equal('envCheck' in pr, false);
+  } finally {
+    delete process.env.APP_ENV; delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+});

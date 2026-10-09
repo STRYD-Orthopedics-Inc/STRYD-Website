@@ -21,11 +21,23 @@ async function handler(event) {
   const key = process.env.POSTHOG_PROJECT_KEY || '';
   const host = process.env.POSTHOG_HOST || '';
   const analytics = isProduction() && !!key && !!host;
-  return json(
-    200,
-    { analytics, posthogKey: analytics ? key : null, uiHost: analytics ? uiHostFor(host) : null, policyVersion: PRIVACY_POLICY_VERSION },
-    { 'Cache-Control': 'public, max-age=300' },
-  );
+  const body = { analytics, posthogKey: analytics ? key : null, uiHost: analytics ? uiHostFor(host) : null, policyVersion: PRIVACY_POLICY_VERSION };
+  // Previews / local only: yes-no flags about the server env, never values, so setup problems are visible without
+  // dashboard logs. Never included in production.
+  if (!isProduction()) {
+    const sbUrl = process.env.SUPABASE_URL || '';
+    const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    body.envCheck = {
+      app_env: process.env.APP_ENV || null,
+      supabase_url_set: !!sbUrl,
+      supabase_url_looks_right: /^https:\/\/[a-z0-9]+\.supabase\.co\/?$/.test(sbUrl),
+      service_key_set: !!sbKey,
+      service_key_looks_like_legacy_jwt: /^eyJ[\w-]+\.[\w-]+\.[\w-]+$/.test(sbKey),
+      rate_limit_salt_set: !!process.env.RATE_LIMIT_SALT,
+      customerio_set: !!(process.env.CUSTOMERIO_SITE_ID && process.env.CUSTOMERIO_API_KEY),
+    };
+  }
+  return json(200, body, { 'Cache-Control': isProduction() ? 'public, max-age=300' : 'no-store' });
 }
 
 exports.handler = handler;

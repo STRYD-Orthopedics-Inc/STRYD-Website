@@ -117,7 +117,8 @@ const good = (over = {}) => ({ email: 'sweep+0@example.invalid', segment: 'other
 
   /* ---- config + secret leakage in public files ---- */
   r = await call('/api/config');
-  rec('secrets', '/api/config exposes only public values', r.json && Object.keys(r.json).every((k) => ['analytics', 'posthogKey', 'uiHost', 'policyVersion'].includes(k)), r.text.slice(0, 120));
+  rec('secrets', 'envCheck (previews only) holds yes/no flags, never values', !r.json || !r.json.envCheck || Object.values(r.json.envCheck).every((v) => typeof v === 'boolean' || v === null || ['preview', 'development'].includes(v)), JSON.stringify(r.json && r.json.envCheck));
+  rec('secrets', '/api/config exposes only public values', r.json && Object.keys(r.json).every((k) => ['analytics', 'posthogKey', 'uiHost', 'policyVersion', 'envCheck'].includes(k)), r.text.slice(0, 120));
   const files = ['/', '/waitlist', '/assets/consent.js', '/assets/waitlist.js', '/assets/analytics.js', '/assets/confirm.js', '/assets/theme.js', '/index.html'];
   let leak = [];
   for (const f of files) { const x = await call(f); x.text = x.text.replace(/data-netlify-cwv-token="[^"]*"/g, ''); /* Netlify's own injected preview token, not ours */ if (/service_role|SUPABASE_SERVICE|CUSTOMERIO_API_KEY|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./.test(x.text)) leak.push(f); }
