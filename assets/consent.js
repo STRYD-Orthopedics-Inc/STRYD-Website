@@ -174,6 +174,9 @@
       '<button type="button" class="cc-accept">Accept</button></div>';
     banner.querySelector('.cc-accept').addEventListener('click', function () { choose('accepted'); });
     banner.querySelector('.cc-decline').addEventListener('click', function () { choose('declined'); });
+    // Netlify injects a collaborative-review toolbar along the bottom of deploy-preview URLs. Lift the banner above it
+    // there so Accept / Decline stay clickable. Does nothing on the real site.
+    if (/\.netlify\.app$/.test(location.hostname)) banner.style.bottom = '84px';
     document.body.appendChild(banner);
   }
 

@@ -158,3 +158,28 @@ test('required docs exist', () => {
     assert.ok(fs.existsSync(path.join(ROOT, f)), f);
   }
 });
+
+test('homepage has light mode: no-flash script, toggle in nav + drawer, theme CSS scoped to light', () => {
+  const html = read('index.html');
+  assert.match(html, /<meta name="color-scheme" content="dark light">/);
+  assert.ok(html.indexOf("stryd_theme") < html.indexOf('assets/stryd.css'), 'theme script must run before CSS loads');
+  assert.equal((html.match(/data-theme-toggle/g) || []).length, 2, 'toggle in header and in the mobile menu');
+  assert.match(html, /assets\/home-light\.css/);
+  assert.match(html, /assets\/theme\.js/);
+  // The hero letters must not hardcode white (it would be invisible in light mode).
+  assert.equal(/s\.style\.color\s*=\s*'#fff'/.test(html), false);
+  const css = read('assets/home-light.css');
+  // Every rule that changes colors is either the shared toggle or scoped to the light theme (dark stays untouched).
+  const rules = css.replace(/\/\*[\s\S]*?\*\//g, '').split('}').map((r) => r.split('{')[0].trim()).filter(Boolean);
+  for (const sel of rules) {
+    const ok = /data-theme="light"/.test(sel) || /^\.theme-toggle|^\.mobile-drawer \.theme-toggle|^:root$/.test(sel);
+    assert.ok(ok, 'unscoped selector in home-light.css: ' + sel);
+  }
+  assert.match(css, /\.partner-tag[\s\S]*color: #fff !important/, 'colored logo tags keep white text');
+  assert.equal(/(?<![\w-])color:#fff/.test(html.slice(html.indexOf('<style>'), html.indexOf('</style>'))), false, 'page styles use theme variables, not hardcoded white');
+});
+
+test('cookie banner clears the Netlify preview toolbar on *.netlify.app only', () => {
+  const js = read('assets/consent.js');
+  assert.match(js, /\\.netlify\\.app\$\/\.test\(location\.hostname\)\) banner\.style\.bottom = '84px'/);
+});
