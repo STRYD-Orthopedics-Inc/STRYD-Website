@@ -108,7 +108,11 @@ const good = (over = {}) => ({ email: 'sweep+0@example.invalid', segment: 'other
   for (const [path, why] of [['/go/does-not-exist-zz', 'unknown slug'], ['/go/x?next=https://evil.example&url=https://evil.example', 'next/url params ignored'], ['/go/..%2f..%2fetc', 'path traversal slug'], ['/go/%00', 'null byte']]) {
     const x = await call(path);
     const loc = x.headers.get('location') || '';
-    rec('redirects', `${why} -> redirect stays on-site`, x.status === 302 && (loc === '/' || loc.startsWith('/')) && !/evil/.test(loc), `status ${x.status} ${loc}`);
+    // Safe = a same-origin redirect (Netlify may append the original query string; that is harmless as long as the
+    // destination host never changes) or a 4xx rejection of the malformed URL.
+    let sameOrigin = false;
+    try { sameOrigin = x.status === 302 && new URL(loc, base).origin === origin; } catch { /* invalid */ }
+    rec('redirects', `${why} -> stays on-site (or is rejected)`, sameOrigin || (x.status >= 400 && x.status < 500), `status ${x.status} ${loc}`);
   }
 
   /* ---- config + secret leakage in public files ---- */
@@ -116,7 +120,7 @@ const good = (over = {}) => ({ email: 'sweep+0@example.invalid', segment: 'other
   rec('secrets', '/api/config exposes only public values', r.json && Object.keys(r.json).every((k) => ['analytics', 'posthogKey', 'uiHost', 'policyVersion'].includes(k)), r.text.slice(0, 120));
   const files = ['/', '/waitlist', '/assets/consent.js', '/assets/waitlist.js', '/assets/analytics.js', '/assets/confirm.js', '/assets/theme.js', '/index.html'];
   let leak = [];
-  for (const f of files) { const x = await call(f); if (/service_role|SUPABASE_SERVICE|CUSTOMERIO_API_KEY|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./.test(x.text)) leak.push(f); }
+  for (const f of files) { const x = await call(f); x.text = x.text.replace(/data-netlify-cwv-token="[^"]*"/g, ''); /* Netlify's own injected preview token, not ours */ if (/service_role|SUPABASE_SERVICE|CUSTOMERIO_API_KEY|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./.test(x.text)) leak.push(f); }
   rec('secrets', 'no keys in public HTML/JS', leak.length === 0, leak.join(','));
 
   /* ---- consent gating (static) ---- */
