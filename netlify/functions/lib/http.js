@@ -1,5 +1,5 @@
 'use strict';
-const { siteUrl, isProduction } = require('./config');
+const { siteUrl, baseUrlFor, isProduction } = require('./config');
 
 const MAX_BODY_BYTES = 10 * 1024;
 
@@ -17,11 +17,10 @@ function json(statusCode, body, extraHeaders) {
 function originAllowed(event) {
   const origin = (event.headers && (event.headers.origin || event.headers.Origin)) || '';
   if (!origin) return false;
-  let allowed;
-  try { allowed = new URL(siteUrl()).origin; } catch { allowed = ''; }
-  if (origin === allowed) return true;
-  // Local development only.
-  if (!isProduction() && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  const ok = (u) => { try { return origin === new URL(u).origin; } catch { return false; } };
+  if (ok(siteUrl())) return true;
+  // Production accepts only the configured site. Previews / local dev also accept their own host.
+  if (!isProduction() && ok(baseUrlFor(event))) return true;
   return false;
 }
 

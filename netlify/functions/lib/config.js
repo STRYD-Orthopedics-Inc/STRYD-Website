@@ -11,9 +11,26 @@ function isProduction() {
   return process.env.APP_ENV === 'production';
 }
 
+// Configured site URL (set SITE_URL on the Production context). Netlify's CONTEXT / DEPLOY_URL / DEPLOY_PRIME_URL
+// are build-time only and are NOT visible to functions, so previews cannot rely on them (see baseUrlFor).
 function siteUrl() {
-  const u = process.env.SITE_URL || process.env.DEPLOY_PRIME_URL || 'https://strydorthopedics.com';
+  const u = process.env.SITE_URL || process.env.URL || 'https://strydorthopedics.com';
   return u.replace(/\/$/, '');
+}
+
+// Base URL for links we generate and the origin we accept.
+// Production: always the configured site URL (the Host header is never trusted).
+// Non-production (deploy previews, local dev): the request's own host, but only if it is a *.netlify.app or
+// localhost host, so a forged Host header cannot point confirm links at an attacker's domain.
+function baseUrlFor(event) {
+  if (isProduction()) return siteUrl();
+  const h = (event && event.headers) || {};
+  const host = String(h['x-forwarded-host'] || h.host || '').split(',')[0].trim().toLowerCase();
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)*(:\d{1,5})?$/.test(host)) return siteUrl();
+  const hostname = host.split(':')[0];
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return `http://${host}`;
+  if (hostname.endsWith('.netlify.app')) return `https://${host}`;
+  return siteUrl();
 }
 
 // Previews and local dev write to the _test table.
@@ -31,4 +48,4 @@ function countThreshold() {
   return Number.isFinite(n) && n >= 0 ? n : 1000;
 }
 
-module.exports = { PRIVACY_POLICY_VERSION, isProduction, siteUrl, signupsTable, confirmTtlMs, countThreshold };
+module.exports = { PRIVACY_POLICY_VERSION, isProduction, siteUrl, baseUrlFor, signupsTable, confirmTtlMs, countThreshold };

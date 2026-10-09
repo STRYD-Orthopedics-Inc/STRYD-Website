@@ -331,3 +331,37 @@ test('sync-retry: retries pending rows older than 2 minutes, rotates token, mark
     assert.equal(t.waitlist_signups[2].cio_attempts, 5);
   } finally { delete process.env.APP_ENV; }
 });
+
+test('preview deploys: accept their own *.netlify.app origin and build confirm links on that host', async () => {
+  const ctx = createDeps();
+  const host = 'deploy-preview-7--stryd.netlify.app';
+  const res = await submit(ctx.deps)(post(goodBody(), { origin: `https://${host}`, headers: { host } }));
+  assert.equal(res.statusCode, 200);
+  const ev = ctx.cio.calls.filter((c) => c[2] === 'waitlist_submitted').pop();
+  assert.ok(ev[3].confirm_url.startsWith(`https://${host}/waitlist/confirm?token=`), ev[3].confirm_url);
+});
+
+test('preview deploys: a forged Host header cannot redirect confirm links or open the origin check', async () => {
+  const ctx = createDeps();
+  const h = submit(ctx.deps);
+  for (const host of ['evil.example', 'evil.netlify.app.evil.example', 'evil.example:443', '-bad host']) {
+    const res = await h(post(goodBody(), { origin: `https://${host}`, headers: { host } }));
+    assert.equal(res.statusCode, 403, host);
+  }
+  // Real Origin but a spoofed forwarded host: still falls back to the configured site URL for links.
+  const res = await h(post(goodBody(), { origin: 'https://strydorthopedics.com', headers: { host: 'evil.example', 'x-forwarded-host': 'evil.example' } }));
+  assert.equal(res.statusCode, 200);
+  const ev = ctx.cio.calls.filter((c) => c[2] === 'waitlist_submitted').pop();
+  assert.ok(ev[3].confirm_url.startsWith('https://strydorthopedics.com/'), ev[3].confirm_url);
+});
+
+test('production never trusts the Host header or a preview origin', async () => {
+  const ctx = createDeps();
+  process.env.APP_ENV = 'production';
+  try {
+    const host = 'deploy-preview-7--stryd.netlify.app';
+    const res = await submit(ctx.deps)(post(goodBody(), { origin: `https://${host}`, headers: { host } }));
+    assert.equal(res.statusCode, 403);
+    assert.equal((ctx.db.tables.waitlist_signups || []).length, 0);
+  } finally { delete process.env.APP_ENV; }
+});

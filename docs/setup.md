@@ -24,8 +24,8 @@ Scope each variable to the right deploy contexts (Production / Deploy Previews /
 
 | Name | Secret | Production | Previews | Notes |
 |---|---|---|---|---|
-| `APP_ENV` | no | `production` | `preview` (or leave unset) | **Only** the literal `production` enables production behavior. Anything else = writes to `*_test` tables, no real email, PostHog off. |
-| `SITE_URL` | no | `https://strydorthopedics.com` | the preview URL (or leave unset: falls back to Netlify's `DEPLOY_PRIME_URL`) | Used to build confirm links and to check the `Origin` header. |
+| `APP_ENV` | no | `production` | `preview` (any value other than `production`) | **Only** the literal `production` enables production behavior. Anything else = writes to `*_test` tables, no real email, PostHog off. |
+| `SITE_URL` | no | `https://strydorthopedics.com` | **leave unset** | Production only. Previews derive their own `*.netlify.app` host from the request (Netlify's `CONTEXT`/`DEPLOY_URL`/`DEPLOY_PRIME_URL` are build-time only and not visible to functions). Used to build confirm links and to check the `Origin` header. |
 | `SUPABASE_URL` | no | from H1 | same project | |
 | `SUPABASE_SERVICE_ROLE_KEY` | **yes** | from H1 | same | Server only. Mark as secret + scope to Functions. |
 | `CUSTOMERIO_SITE_ID` | **yes** | from H3 | set only if you want previews to send to allow-listed team addresses | |

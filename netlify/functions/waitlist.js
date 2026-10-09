@@ -8,7 +8,7 @@
 // - Never logs emails, tokens, or request bodies.
 
 const { json, originAllowed, parseJsonBody, clientIp } = require('./lib/http');
-const { PRIVACY_POLICY_VERSION, signupsTable, confirmTtlMs } = require('./lib/config');
+const { PRIVACY_POLICY_VERSION, signupsTable, confirmTtlMs, baseUrlFor } = require('./lib/config');
 const { validateSubmission } = require('./lib/validate');
 const { generateToken, hashToken } = require('./lib/token');
 const { guessFirstName } = require('./lib/firstName');
@@ -22,9 +22,9 @@ function createHandler(deps = defaults) {
   const { db, cio, rate } = deps;
 
   // Customer.io sync for a pending signup. Never throws: failures are retried by sync-retry.
-  async function syncPending(table, row, token) {
+  async function syncPending(table, row, token, baseUrl) {
     try {
-      await sendSubmitted(cio, row, token);
+      await sendSubmitted(cio, row, token, baseUrl);
       await db.update(table, { id: `eq.${row.id}` }, { cio_sync_status: 'synced' });
     } catch (err) {
       console.error('waitlist cio sync failed', err && err.name, err && err.status);
@@ -54,6 +54,7 @@ function createHandler(deps = defaults) {
       const v = result.value;
 
       const table = signupsTable();
+      const baseUrl = baseUrlFor(event);
       const nowMs = deps.now();
       const nowIso = new Date(nowMs).toISOString();
       const existing = await db.selectOne(table, { email: `eq.${v.email}` });
@@ -94,7 +95,7 @@ function createHandler(deps = defaults) {
           if (err && err.code === '23505') return json(200, OK);
           throw err;
         }
-        await syncPending(table, inserted, token);
+        await syncPending(table, inserted, token, baseUrl);
       } else if (existing.status === 'pending') {
         const sentAt = existing.confirm_email_sent_at ? new Date(existing.confirm_email_sent_at).getTime() : 0;
         if (nowMs - sentAt > RESEND_COOLDOWN_MS) {
@@ -104,7 +105,7 @@ function createHandler(deps = defaults) {
             confirm_token_expires_at: new Date(nowMs + confirmTtlMs()).toISOString(),
             confirm_email_sent_at: nowIso,
           });
-          await syncPending(table, existing, token);
+          await syncPending(table, existing, token, baseUrl);
         }
       }
       // confirmed: do nothing

@@ -29,12 +29,12 @@ function buildAttributes(row) {
 }
 
 // Returns 'synced' | 'skipped'. Throws on Customer.io failure.
-async function sendSubmitted(cio, row, token) {
+async function sendSubmitted(cio, row, token, baseUrl = siteUrl()) {
   if (cio.mode(row.email) === 'log') {
     console.log('[cio:log-only] would identify person and track waitlist_submitted');
     return 'skipped';
   }
-  const confirmUrl = `${siteUrl()}/waitlist/confirm?token=${token}`;
+  const confirmUrl = `${baseUrl}/waitlist/confirm?token=${token}`;
   await cio.identify(row.id, buildAttributes(row));
   await cio.track(row.id, 'waitlist_submitted', { confirm_url: confirmUrl });
   return 'synced';

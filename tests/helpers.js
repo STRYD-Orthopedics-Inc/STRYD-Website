@@ -77,10 +77,10 @@ function createDeps({ production = false } = {}) {
   return { deps, clock, db, cio, ph };
 }
 
-function post(body, { origin = 'https://strydorthopedics.com', ip = '203.0.113.7', raw } = {}) {
+function post(body, { origin = 'https://strydorthopedics.com', ip = '203.0.113.7', raw, headers = {} } = {}) {
   return {
     httpMethod: 'POST',
-    headers: { origin, 'x-nf-client-connection-ip': ip },
+    headers: { origin, 'x-nf-client-connection-ip': ip, ...headers },
     body: raw !== undefined ? raw : JSON.stringify(body),
   };
 }
