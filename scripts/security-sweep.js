@@ -117,7 +117,7 @@ const good = (over = {}) => ({ email: 'sweep+0@example.invalid', segment: 'other
 
   /* ---- config + secret leakage in public files ---- */
   r = await call('/api/config');
-  rec('secrets', 'envCheck (previews only) holds yes/no flags, never values', !r.json || !r.json.envCheck || Object.values(r.json.envCheck).every((v) => typeof v === 'boolean' || v === null || ['preview', 'development'].includes(v)), JSON.stringify(r.json && r.json.envCheck));
+  rec('secrets', 'envCheck (previews only) holds yes/no flags, never values', !r.json || !r.json.envCheck || Object.entries(r.json.envCheck).every(([k, v]) => typeof v === 'boolean' || v === null || (k === 'app_env' && typeof v === 'string' && v.toLowerCase() !== 'production' && v.length < 20)), JSON.stringify(r.json && r.json.envCheck));
   rec('secrets', '/api/config exposes only public values', r.json && Object.keys(r.json).every((k) => ['analytics', 'posthogKey', 'uiHost', 'policyVersion', 'envCheck'].includes(k)), r.text.slice(0, 120));
   const files = ['/', '/waitlist', '/assets/consent.js', '/assets/waitlist.js', '/assets/analytics.js', '/assets/confirm.js', '/assets/theme.js', '/index.html'];
   let leak = [];
