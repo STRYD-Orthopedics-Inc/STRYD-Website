@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,follow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STRYD — Product</title>
@@ -8,8 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/stryd.css">
-<link rel="icon" type="image/png" href="assets/images/favicon.png">
-<link rel="apple-touch-icon" href="assets/images/favicon.png">
+<link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/images/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 </head>
 <body class="glow-on">
 
@@ -29,12 +31,9 @@
     <div class="nav-links">
       <a href="index.html">Main</a>
       <a href="product.html" class="active">Product</a>
-      <a href="pt.html">PT</a>
-      <a href="athletics.html">Athletes</a>
-      <a href="military.html">Military</a>
     </div>
     <div class="nav-right">
-      <a href="index.html#waitlist" class="btn btn-primary" style="padding:9px 18px;">Request Demo</a>
+      <a href="/waitlist" class="btn btn-primary" style="padding:9px 18px;">Join Waitlist</a>
       <button class="nav-burger" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
@@ -46,10 +45,7 @@
   <button class="close" aria-label="Close menu">&times;</button>
   <a href="index.html">Main</a>
   <a href="product.html">Product</a>
-  <a href="pt.html">PT</a>
-  <a href="athletics.html">Athletes</a>
-  <a href="military.html">Military</a>
-  <a href="index.html#waitlist" class="btn btn-primary">Request Demo</a>
+  <a href="/waitlist" class="btn btn-primary">Join Waitlist</a>
 </div>
 
 <!-- EXPLODED PRODUCT VIEW — full viewport, centered -->
@@ -102,6 +98,8 @@
 window.STRYD = window.STRYD || {};
 </script>
 <script src="assets/stryd.js"></script>
+<script src="assets/consent.js"></script>
+<script src="assets/analytics.js"></script>
 <script>
   window.STRYD.waveSpeed = 0.9;
   STRYDinit();
