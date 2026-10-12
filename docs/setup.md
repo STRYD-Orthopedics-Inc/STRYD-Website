@@ -11,7 +11,7 @@ Nothing here needs a build step. The site is static HTML; the waitlist backend i
 | H2 | Create the PostHog project | Note the region (US or EU) and the **project API key** (public key, starts `phc_`). If EU, change the two `/ingest` redirects in `netlify.toml` (see the comment there). |
 | H3 | Customer.io | Confirm workspace region and which ingestion API the workspace uses (**Track API** with site ID + API key is what the code is written for). Create credentials. Confirm `contact@strydorthopedics.com` is a verified sender. Add SPF, DKIM, DMARC DNS records for strydorthopedics.com (merge into a single SPF record if mail is on Google Workspace / Microsoft 365). |
 | H4 | Confirm the `contact@` mailbox exists, receives mail, and someone watches replies | Replies from the welcome email land here. |
-| H5 | Provide the business mailing address | Required in the footer of marketing email. |
+| H5 | ~~Provide the business mailing address~~ **Done:** STRYD Orthopedics, Inc., 811 5th Ave N, Birmingham, AL 35203 | Required in the footer of marketing email (welcome email draft includes it). |
 | H6 | Add the env vars below in Netlify | UI: Site configuration > Environment variables. Use per-context values. |
 | H7 | Approve at the gates | G1 plan (done), G2 preview, G3 email copy, G4 merge, G5 security sweep. |
 

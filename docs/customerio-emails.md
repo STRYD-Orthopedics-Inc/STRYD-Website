@@ -50,7 +50,7 @@ The STRYD team
 ## Campaign 2: "Waitlist: welcome"  (event-triggered)
 
 - Trigger: event `waitlist_confirmed`. Send immediately. Add a condition `confirmed is true` as a safety net.
-- From / reply-to as above. Include the **unsubscribe link** and the **business mailing address** (setup step H5).
+- From / reply-to as above. Include the **unsubscribe link** and the **business mailing address** (setup step H5, done: 811 5th Ave N, Birmingham, AL 35203).
 
 **Subject:** You're on the STRYD waitlist
 
@@ -66,7 +66,8 @@ One question: what's the one thing you'd most like to understand about your knee
 Saketh, Ashton, and Aldo
 STRYD Orthopedics
 
-[unsubscribe link]  [business mailing address]
+{% unsubscribe_url %}  (Unsubscribe)
+STRYD Orthopedics, Inc. | 811 5th Ave N, Birmingham, AL 35203
 ```
 
 ## Segments to create
