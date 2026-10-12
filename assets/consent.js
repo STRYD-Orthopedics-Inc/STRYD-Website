@@ -8,7 +8,7 @@
 (function () {
   'use strict';
 
-  var POLICY_VERSION = '2026-10-06';
+  var POLICY_VERSION = '2026-10-12';
   var CONSENT_KEY = 'stryd_consent';
   var ATTR_KEY = 'stryd_attr';
   var ATTR_TTL_MS = 30 * 24 * 60 * 60 * 1000;

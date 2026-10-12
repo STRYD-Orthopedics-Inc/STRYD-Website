@@ -29,7 +29,7 @@ test('submit: happy path writes to the _test table, syncs to Customer.io, stores
   assert.equal(r.status, 'pending');
   assert.equal(r.cio_sync_status, 'synced');
   assert.equal(r.age_attested, true);
-  assert.equal(r.consent_policy_version, '2026-10-06');
+  assert.equal(r.consent_policy_version, require('../netlify/functions/lib/config').PRIVACY_POLICY_VERSION);
   const token = tokenFromCio(ctx);
   assert.equal(r.confirm_token_hash, hashToken(token));
   assert.notEqual(r.confirm_token_hash, token);

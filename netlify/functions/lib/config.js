@@ -4,7 +4,7 @@
 
 // Bump whenever privacy.html changes. Stored with every consent record.
 // Never accepted from the client.
-const PRIVACY_POLICY_VERSION = '2026-10-06';
+const PRIVACY_POLICY_VERSION = '2026-10-12';
 
 // Fail safe: anything other than the literal string "production" is non-production.
 function isProduction() {
