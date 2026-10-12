@@ -29,7 +29,9 @@
 <link rel="preload" as="image" href="/assets/images/hero-sleeve.webp" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<!-- Fonts load without blocking first paint. Fallback faces below are size-matched (measured) so the swap does not move the layout. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap"></noscript>
 <link rel="stylesheet" href="assets/stryd.css">
 <link rel="stylesheet" href="assets/home-theme.css">
 <style>
@@ -48,6 +50,12 @@
   .hero-bubble { position:absolute; inset:0; overflow:hidden; border-radius:48px; background:#000; -webkit-transform:translateZ(0); transform:translateZ(0); -webkit-mask-image:-webkit-radial-gradient(white,black); }
   /* Desktop: video fills the bubble, which matches the height of the copy beside it. Only the empty studio backdrop at the sides is trimmed; the full sleeve height is always shown. */
   .hero-video { display:block; width:100%; height:100%; object-fit:cover; }
+  /* Size-matched fallbacks (width ratios measured against Arial) so the headline and copy wrap the same before and after the web fonts arrive. */
+  @font-face { font-family:'SG Fallback'; src:local('Arial'); font-weight:300 599; size-adjust:108.1%; }
+  @font-face { font-family:'SG Fallback'; src:local('Arial Bold'), local('Arial'); font-weight:600 900; size-adjust:101.3%; }
+  @font-face { font-family:'Inter Fallback'; src:local('Arial'); font-weight:300 599; size-adjust:106.3%; }
+  @font-face { font-family:'Inter Fallback'; src:local('Arial Bold'), local('Arial'); font-weight:600 900; size-adjust:101.1%; }
+  :root { --font-display:'Space Grotesk','SG Fallback',sans-serif; --font-body:'Inter','Inter Fallback',sans-serif; }
   /* Interactive sleeve viewer (assets/hero-viewer.js): the loop plays by default; touching it turns / zooms the sleeve and it
      returns to the loop shortly after you stop. */
   .hero-bubble[data-hero-viewer] { cursor:grab; touch-action:pan-y; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -62,7 +70,7 @@
   .hero-bubble.has-used .hv-hint, .hero-bubble.is-active .hv-hint { opacity:0; }
   @media (prefers-reduced-motion: reduce) { .hv-canvas, .hv-hint { transition:none; } }
   .hero-copy { text-align:center; min-width:0; }
-  .hero-copy .hero-title-pulse { font-size:clamp(30px,3.8vw,58px); max-width:16ch; }
+  .hero-copy .hero-title-pulse { font-size:clamp(30px,3.8vw,58px); max-width:10.37em; /* = 16ch of Space Grotesk 700, but independent of which font is showing, so the headline wraps the same before and after the font loads */ }
   @media (max-width: 900px) {
     .hero-split { grid-template-columns:1fr; padding:88px 0 clamp(28px,6vw,48px); gap:28px; }
     .hero-bubble { position:relative; inset:auto; border-radius:32px; }
@@ -245,8 +253,8 @@
     <div class="emg-wrap" style="margin:24px auto 0;max-width:520px;">
       <canvas id="emg-hero" class="emg-canvas" style="height:64px;"></canvas>
     </div>
-    <p style="color:var(--c-gray-400);max-width:44ch;margin:22px auto 0;font-size:17px;">The wearable for knee health.</p>
-    <p style="color:var(--c-gray-400);max-width:54ch;margin:6px auto 0;font-size:17px;">Designed to help you see the wear that builds up over time.</p>
+    <p style="color:var(--c-gray-400);max-width:472px;margin:22px auto 0;font-size:17px;">The wearable for knee health.</p>
+    <p style="color:var(--c-gray-400);max-width:579px;margin:6px auto 0;font-size:17px;">Designed to help you see the wear that builds up over time.</p>
 
     <div class="hero-cta" style="justify-content:center;margin-top:32px;">
       <a href="/waitlist" class="btn btn-primary" data-cta="Join the Waitlist" data-cta-location="hero">Join the Waitlist</a>
