@@ -1,11 +1,32 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en-US" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark light">
 <script>(function(){try{var t=localStorage.getItem('stryd_theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','dark')}})();</script>
-<title>STRYD Orthopedics — Join the Waitlist</title>
+<title>STRYD Orthopedics | The Wearable for Knee Health</title>
+<meta name="description" content="STRYD is a patent-pending wearable sleeve and app that helps you see the wear that builds up in your knees over time. Join the waitlist for early access.">
+<link rel="canonical" href="https://strydorthopedics.com/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#070A12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F7F9FD" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STRYD Orthopedics">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="STRYD | Know what your knees are telling you">
+<meta property="og:description" content="STRYD is a patent-pending wearable sleeve and app that helps you see the wear that builds up in your knees over time. Join the waitlist for early access.">
+<meta property="og:url" content="https://strydorthopedics.com/">
+<meta property="og:image" content="https://strydorthopedics.com/assets/images/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="STRYD knee sleeve beside the headline: Know what your knees are telling you.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="STRYD | Know what your knees are telling you">
+<meta name="twitter:description" content="STRYD is a patent-pending wearable sleeve and app that helps you see the wear that builds up in your knees over time. Join the waitlist for early access.">
+<meta name="twitter:image" content="https://strydorthopedics.com/assets/images/og.jpg">
+<meta name="twitter:image:alt" content="STRYD knee sleeve beside the headline: Know what your knees are telling you.">
+<link rel="preload" as="image" href="/assets/images/hero-sleeve.webp" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
@@ -27,6 +48,19 @@
   .hero-bubble { position:absolute; inset:0; overflow:hidden; border-radius:48px; background:#000; -webkit-transform:translateZ(0); transform:translateZ(0); -webkit-mask-image:-webkit-radial-gradient(white,black); }
   /* Desktop: video fills the bubble, which matches the height of the copy beside it. Only the empty studio backdrop at the sides is trimmed; the full sleeve height is always shown. */
   .hero-video { display:block; width:100%; height:100%; object-fit:cover; }
+  /* Interactive sleeve viewer (assets/hero-viewer.js): the loop plays by default; touching it turns / zooms the sleeve and it
+     returns to the loop shortly after you stop. */
+  .hero-bubble[data-hero-viewer] { cursor:grab; touch-action:pan-y; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+  .hero-bubble[data-hero-viewer].is-dragging { cursor:grabbing; }
+  .hero-bubble[data-hero-viewer]:focus { outline:none; }
+  .hero-bubble[data-hero-viewer]:focus-visible { outline:2px solid var(--c-brand); outline-offset:4px; }
+  .hv-canvas { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition:opacity .36s ease; pointer-events:none; }
+  .hero-bubble.is-live .hv-canvas { opacity:1; }
+  .hv-hint { position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:2; display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+    font:600 12px/1 var(--font-body); letter-spacing:.02em; color:#FFFFFF /* always white: the pill is dark glass in both themes */; background:rgba(10,10,10,.55); border:1px solid rgba(255,255,255,.28);
+    -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); pointer-events:none; transition:opacity .3s ease; white-space:nowrap; }
+  .hero-bubble.has-used .hv-hint, .hero-bubble.is-active .hv-hint { opacity:0; }
+  @media (prefers-reduced-motion: reduce) { .hv-canvas, .hv-hint { transition:none; } }
   .hero-copy { text-align:center; min-width:0; }
   .hero-copy .hero-title-pulse { font-size:clamp(30px,3.8vw,58px); max-width:16ch; }
   @media (max-width: 900px) {
@@ -117,6 +151,8 @@
   .nav .nav-right .btn { border-radius:var(--radius-full); }
   @media (max-width: 980px) { .nav .nav-links a { padding:8px 9px; font-size:10px; } }
   @media (max-width: 768px) { .nav .container { padding:0 10px 0 16px; } }
+  .skip-link { position:absolute; left:-9999px; top:8px; z-index:300; padding:10px 16px; border-radius:8px; background:#0A0A0A; color:#FFFFFF; border:2px solid #0A7AFF; font-weight:600; text-decoration:none; }
+  .skip-link:focus { left:8px; }
   .faq-list { display:grid; gap:12px; }
   .faq-item { padding:0; }
   .faq-item summary { cursor:pointer; padding:18px 22px; font-weight:600; color:var(--h-ink); list-style:none; }
@@ -126,10 +162,16 @@
   .faq-item p { padding:0 22px 20px; font-size:15px; }
 
 </style>
-<link rel="icon" type="image/png" href="assets/images/favicon.png">
-<link rel="apple-touch-icon" href="assets/images/favicon.png">
+<link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/images/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://strydorthopedics.com/#org","name":"STRYD Orthopedics, Inc.","alternateName":["STRYD Orthopedics","STRYD"],"url":"https://strydorthopedics.com/","logo":"https://strydorthopedics.com/assets/images/apple-touch-icon.png","description":"STRYD Orthopedics, Inc. is building a patent-pending wearable knee sleeve and app for knee health.","email":"contact@strydorthopedics.com","address":{"@type":"PostalAddress","streetAddress":"811 5th Ave N","addressLocality":"Birmingham","addressRegion":"AL","postalCode":"35203","addressCountry":"US"},"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@strydorthopedics.com"},"sameAs":["https://www.linkedin.com/company/stryd-orthopedics-inc/","https://www.instagram.com/stryd.orthopedics","https://www.tiktok.com/@stryd.orthopedics"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://strydorthopedics.com/#website","url":"https://strydorthopedics.com/","name":"STRYD Orthopedics","publisher":{"@id":"https://strydorthopedics.com/#org"},"inLanguage":"en-US"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","@id":"https://strydorthopedics.com/#sleeve","name":"STRYD knee sleeve","brand":{"@type":"Brand","name":"STRYD"},"manufacturer":{"@id":"https://strydorthopedics.com/#org"},"category":"Wearable knee health sleeve","description":"A patent-pending wearable knee sleeve with a companion app that helps you see the wear that builds up in your knees over time. Join the waitlist for early access.","image":["https://strydorthopedics.com/assets/images/og.jpg","https://strydorthopedics.com/assets/images/hero-sleeve.webp"],"url":"https://strydorthopedics.com/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is STRYD?","acceptedAnswer":{"@type":"Answer","text":"STRYD is a wearable knee sleeve and companion app that helps you understand how your body is responding to training."}},{"@type":"Question","name":"How does STRYD work?","acceptedAnswer":{"@type":"Answer","text":"You wear the sleeve while you train. Its sensors pick up how your legs are working, and the app turns that into trends you can read at a glance."}},{"@type":"Question","name":"Is STRYD a medical device?","acceptedAnswer":{"@type":"Answer","text":"No. STRYD is a wellness product, not a medical device, and it isn't a substitute for professional medical advice."}},{"@type":"Question","name":"Who is it for?","acceptedAnswer":{"@type":"Answer","text":"Parents of travel and high school athletes, runners and active adults, and college and pro athletes and teams who want a clearer view of load and strain over time."}},{"@type":"Question","name":"What happens when I join the waitlist?","acceptedAnswer":{"@type":"Answer","text":"You'll hear from us with product updates and early-access information. We won't spam you."}},{"@type":"Question","name":"Where is STRYD Orthopedics based?","acceptedAnswer":{"@type":"Answer","text":"STRYD Orthopedics, Inc. is based in Birmingham, Alabama, in the United States."}},{"@type":"Question","name":"Is STRYD Orthopedics related to other companies with similar names?","acceptedAnswer":{"@type":"Answer","text":"No. STRYD Orthopedics, Inc. is an independent company, and its patent-pending wearable knee sleeve is its own product. We aren't affiliated with other companies that happen to use similar names."}}]}</script>
 </head>
 <body class="glow-on">
+<a class="skip-link" href="#main">Skip to content</a>
 
 <div class="ambient">
   <div class="grid"></div>
@@ -141,7 +183,7 @@
 <nav class="nav">
   <div class="container">
     <a class="logo" href="index.html">
-      <img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
+      <img src="/assets/images/logo-transparent-600.png" width="600" height="221" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
     </a>
     <div class="nav-links">
       <a href="#who">Who It's For</a>
@@ -160,7 +202,7 @@
   </div>
 </nav>
 
-<div class="mobile-drawer">
+<nav class="mobile-drawer" aria-label="Mobile menu">
   <button class="close" aria-label="Close menu">&times;</button>
   <a href="#who">Who It's For</a>
   <a href="#how">How It Works</a>
@@ -169,7 +211,7 @@
   <a href="#contact">Contact</a>
   <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   <a href="/waitlist" class="btn btn-primary" data-cta="Join Waitlist" data-cta-location="mobile_menu">Join Waitlist</a>
-</div>
+</nav>
 
 <!-- ============================================================
      HOMEPAGE ORDER (per "Website Rearrange" brief, Section 3)
@@ -188,10 +230,12 @@
 <!-- 01 HERO — sleeve/video left, hero copy right (half and half); stacked on mobile with video on top.
      Video is never cropped: width 100%, natural aspect ratio. Deliberately NOT .demo-video-tile (stryd.css crops
      that class via !important rules). hero-sleeve.png is the poster so the sleeve shows instantly. -->
+<main id="main">
 <header class="hero hero-hook section-black hero-split" style="display:block;min-height:0;">
   <div class="hero-media">
-    <div class="hero-bubble">
-      <video class="hero-video" data-track-video="hero_demo" poster="assets/images/hero-sleeve.png" src="assets/videos/ProductDemoVideo.mp4" autoplay muted loop playsinline></video>
+    <div class="hero-bubble" data-hero-viewer data-frames="121" data-src="/assets/spin/" data-idle="900" tabindex="0" role="group" aria-roledescription="interactive sleeve viewer" aria-label="STRYD sleeve. A looping video. Drag to turn the sleeve and pinch or double-click to zoom; it returns to the loop when you let go. With the keyboard: left and right arrows turn it, plus and minus zoom, Escape returns to the loop.">
+      <video class="hero-video" data-track-video="hero_demo" poster="/assets/images/hero-sleeve.webp" width="1390" height="676" src="assets/videos/ProductDemoVideo.mp4" autoplay muted loop playsinline></video>
+      <div class="hv-hint" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8M5 9l-3 3 3 3M19 9l3 3-3 3"/></svg>Drag to turn</div>
     </div>
   </div>
 
@@ -398,17 +442,29 @@
         <summary>What is STRYD?</summary>
         <p>STRYD is a wearable knee sleeve and companion app that helps you understand how your body is responding to training.</p>
       </details>
+      <details class="glass faq-item" data-faq-id="how_it_works">
+        <summary>How does STRYD work?</summary>
+        <p>You wear the sleeve while you train. Its sensors pick up how your legs are working, and the app turns that into trends you can read at a glance.</p>
+      </details>
       <details class="glass faq-item" data-faq-id="medical_device">
         <summary>Is STRYD a medical device?</summary>
         <p>No. STRYD is a wellness product, not a medical device, and it isn't a substitute for professional medical advice.</p>
       </details>
       <details class="glass faq-item" data-faq-id="who_for">
         <summary>Who is it for?</summary>
-        <p>Athletes and active adults &mdash; and the parents of young athletes &mdash; who want a clearer view of load and strain over time.</p>
+        <p>Parents of travel and high school athletes, runners and active adults, and college and pro athletes and teams who want a clearer view of load and strain over time.</p>
       </details>
       <details class="glass faq-item" data-faq-id="after_join">
         <summary>What happens when I join the waitlist?</summary>
         <p>You'll hear from us with product updates and early-access information. We won't spam you.</p>
+      </details>
+      <details class="glass faq-item" data-faq-id="where_based">
+        <summary>Where is STRYD Orthopedics based?</summary>
+        <p>STRYD Orthopedics, Inc. is based in Birmingham, Alabama, in the United States.</p>
+      </details>
+      <details class="glass faq-item" data-faq-id="similar_names">
+        <summary>Is STRYD Orthopedics related to other companies with similar names?</summary>
+        <p>No. STRYD Orthopedics, Inc. is an independent company, and its patent-pending wearable knee sleeve is its own product. We aren't affiliated with other companies that happen to use similar names.</p>
       </details>
     </div>
   </div>
@@ -462,7 +518,7 @@
 
         <div style="margin-top:48px;">
           <a class="logo" href="index.html" style="margin-bottom:14px;display:inline-flex;">
-            <img src="assets/images/logo-transparent-png.png" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
+            <img src="/assets/images/logo-transparent-600.png" width="600" height="221" alt="STRYD Orthopedics" style="height:53px;width:auto;display:block;">
           </a>
           <div class="social" style="margin:16px 0 12px;">
             <a href="https://www.linkedin.com/company/stryd-orthopedics-inc/" target="_blank" rel="noopener" aria-label="LinkedIn">
@@ -516,7 +572,7 @@
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 <label style="font-size:12px;color:var(--c-gray-400);font-family:var(--font-mono);">I am a...</label>
-                <select class="input" name="role" required style="cursor:pointer;">
+                <select class="input" name="role" aria-label="I am a" required style="cursor:pointer;">
                   <option value="" disabled selected>Select your role</option>
                   <option value="clinician">Clinician / Physical Therapist</option>
                   <option value="patient">Patient</option>
@@ -541,12 +597,14 @@
     </div>
   </div>
 </section>
+</main>
 
 <script>
 window.STRYD = window.STRYD || {};
 </script>
 <script src="assets/stryd.js"></script>
 <script src="assets/theme.js"></script>
+<script src="assets/hero-viewer.js" defer></script>
 <script src="assets/consent.js"></script>
 <script src="assets/analytics.js"></script>
 <script>

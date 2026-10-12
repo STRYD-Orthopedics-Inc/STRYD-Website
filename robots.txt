@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /go/
+Disallow: /ingest/
+
+Sitemap: https://strydorthopedics.com/sitemap.xml
