@@ -37,3 +37,18 @@ A test (`tests/seo.test.js`) enforces those rules across titles, descriptions, O
 - Google restricts FAQ rich results to a small set of sites, so the FAQ snippet may never display. The markup is harmless and also helps other engines and assistants.
 - The homepage is mostly one page, so there is little text for search to work with. More pages that answer real questions (for example a "Who it's for" page, once the team decides on one) would help more than any tag.
 - Keep adding pages to `sitemap.xml` and give each its own title, description, canonical and structured data. The tests in `tests/seo.test.js` will tell you what is missing.
+
+## Performance: measured, and the one thing left
+
+Lighthouse on the live preview (mobile preset, simulated slow 4G, two runs): **Accessibility 97, Best practices 96, Performance 73-74**, layout shift 0.002 (was 0.168), blocking time 0 ms, first paint 3.3 s. Locally (no network throttling) SEO scores 100.
+
+- **Accessibility 97:** the only miss is white text on the brand-blue `#0A7AFF` buttons (4.0:1; AA needs 4.5:1). The waitlist pages use `#006FBF` (5.2:1). Fixing it on the homepage is a small visual change that needs a decision.
+- **Best practices 96:** the remaining note is Netlify's own preview analytics script being blocked by our strict security policy. That is intentional (no analytics before consent); it is harmless. To silence it, turn off Real User Metrics in the Netlify site settings.
+- **Largest paint ~5 s is the video file, not the code.** Chrome counts the video's first frame as the largest paint. The loop is a **10 MB, 4148x2000** H.264 file and its first frame cannot show until the first part of it arrives. The poster (14 KB) paints in about 1.3 s. A re-encode at the size it is actually shown (about 1600 px wide) would be 2-3 MB and look identical here:
+
+  ```
+  ffmpeg -i ProductDemoVideo.mp4 -vf "scale=1600:-2" -c:v libx264 -crf 26 -preset slow -pix_fmt yuv420p -movflags +faststart -an ProductDemoVideo-web.mp4
+  ```
+
+  (`winget install ffmpeg` on Windows; HandBrake with the "Web" preset and 1600 px width works too.) Then point the hero `<video src>` at the new file. The smaller `WebsiteProductDemo.mp4` already in the repo is *different, older footage* with a watermark, so it is not a substitute.
+- Already done: poster 1.2 MB -> 14 KB and preloaded; fonts load without blocking and use size-matched fallbacks; the loop starts after page load and is skipped on Save-Data connections; the 121 sleeve frames only download when the page is idle or on first touch.
