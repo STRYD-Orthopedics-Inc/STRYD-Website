@@ -2,8 +2,8 @@
 // Server-side PostHog events. Production only; failures are swallowed (analytics must never break signup).
 // Never sends an email address (7.4): distinct id is the signup UUID.
 //
-// VERIFY: the $create_alias call shape against current PostHog docs. If linking proves unreliable, the Supabase
-// funnel view (v_confirmation_funnel) remains the source of truth for confirmation counts.
+// $create_alias shape checked against PostHog's docs (2026-10). If linking ever proves unreliable, the Supabase funnel
+// view (v_confirmation_funnel) remains the source of truth for confirmation counts.
 
 const { isProduction } = require('./config');
 
@@ -23,10 +23,12 @@ async function captureConfirmed({ signupId, anonId, properties }) {
   if (!isProduction()) return;
   try {
     if (anonId) {
+      // Shape per PostHog docs: distinct_id = the identified user, alias = the anonymous id. The anonymous id has never
+      // been identified/aliased elsewhere (the browser never calls identify), which is the one documented requirement.
       await post({
         event: '$create_alias',
-        distinct_id: anonId,
-        properties: { distinct_id: anonId, alias: signupId },
+        distinct_id: signupId,
+        properties: { distinct_id: signupId, alias: anonId },
       });
     }
     await post({ event: 'waitlist_confirmed', distinct_id: signupId, properties: properties || {} });
@@ -36,3 +38,4 @@ async function captureConfirmed({ signupId, anonId, properties }) {
 }
 
 module.exports = { captureConfirmed };
+

@@ -385,3 +385,34 @@ test('/api/config: previews get yes/no env flags (never values); production gets
     delete process.env.APP_ENV; delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   }
 });
+
+test('posthog server events: alias shape per docs, no PII, production only, errors swallowed', async () => {
+  const ph = require('../netlify/functions/lib/posthog');
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => { sent.push({ url, body: JSON.parse(opts.body) }); return { ok: true }; };
+  process.env.POSTHOG_PROJECT_KEY = 'phc_test'; process.env.POSTHOG_HOST = 'https://us.i.posthog.com';
+  try {
+    await ph.captureConfirmed({ signupId: 'uuid-1', anonId: 'anon-1', properties: { segment: 'other' } });
+    assert.equal(sent.length, 0, 'non-production sends nothing');
+    process.env.APP_ENV = 'production';
+    await ph.captureConfirmed({ signupId: 'uuid-1', anonId: 'anon-1', properties: { segment: 'other', where_heard: 'tiktok' } });
+    assert.equal(sent.length, 2);
+    assert.ok(sent.every((e) => e.url === 'https://us.i.posthog.com/capture/'));
+    assert.equal(sent[0].body.event, '$create_alias');
+    assert.equal(sent[0].body.properties.distinct_id, 'uuid-1');
+    assert.equal(sent[0].body.properties.alias, 'anon-1');
+    assert.equal(sent[1].body.event, 'waitlist_confirmed');
+    assert.equal(sent[1].body.distinct_id, 'uuid-1');
+    assert.equal(JSON.stringify(sent).includes('@'), false, 'no email reaches PostHog');
+    // no anonymous id -> only the confirmed event
+    sent.length = 0;
+    await ph.captureConfirmed({ signupId: 'uuid-2', anonId: null, properties: {} });
+    assert.equal(sent.length, 1);
+    // a PostHog outage must never break confirmation
+    globalThis.fetch = async () => { throw new Error('network'); };
+    await ph.captureConfirmed({ signupId: 'uuid-3', anonId: 'a', properties: {} });
+  } finally {
+    globalThis.fetch = realFetch; delete process.env.APP_ENV; delete process.env.POSTHOG_PROJECT_KEY; delete process.env.POSTHOG_HOST;
+  }
+});

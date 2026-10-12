@@ -84,12 +84,18 @@
 # ---------------------------------------------------------------------------
 # PostHog reverse proxy (first-party path so it is not blocked as third-party).
 # TODO(H2): these use the US region hosts. If the PostHog project is EU, change both to
-#   https://eu-assets.i.posthog.com/static/:splat  and  https://eu.i.posthog.com/:splat
-# The static-assets rule must stay above the catch-all.
+#   eu-assets.i.posthog.com (static + array rules)  and  eu.i.posthog.com (catch-all)
+# The /static and /array rules must stay above the catch-all.
 # ---------------------------------------------------------------------------
 [[redirects]]
   from = "/ingest/static/*"
   to = "https://us-assets.i.posthog.com/static/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ingest/array/*"
+  to = "https://us-assets.i.posthog.com/array/:splat"
   status = 200
   force = true
 

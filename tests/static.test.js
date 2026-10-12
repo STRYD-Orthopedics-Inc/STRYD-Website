@@ -114,6 +114,7 @@ test('netlify.toml: routes, schedule, proxy ordering, headers', () => {
   }
   assert.match(t, /\[functions\."sync-retry"\][\s\S]*schedule = "\*\/15 \* \* \* \*"/);
   assert.ok(t.indexOf('/ingest/static/*') < t.indexOf('from = "/ingest/*"'), 'static assets rule must come first');
+  assert.ok(t.indexOf('/ingest/array/*') > -1 && t.indexOf('/ingest/array/*') < t.indexOf('from = "/ingest/*"'), 'array rule must exist and precede the catch-all');
   assert.match(t, /frame-ancestors 'none'/);
   assert.match(t, /Strict-Transport-Security/);
   assert.match(t, /\/waitlist-confirm\.html"[\s\S]*Referrer-Policy = "no-referrer"/);
