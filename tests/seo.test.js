@@ -134,7 +134,8 @@ test('hero viewer: wired into the hero, assets present, built to return to the l
   const html = read('index.html');
   assert.match(html, /<div class="hero-bubble" data-hero-viewer data-frames="121" data-src="\/assets\/spin\/"/);
   assert.match(html, /assets\/hero-viewer\.js/);
-  assert.match(html, /<video class="hero-video"[^>]*autoplay muted loop playsinline/);
+  assert.match(html, /<video class="hero-video"[^>]*preload="none" muted loop playsinline/, 'the 10 MB loop is not preloaded');
+  assert.match(read('assets/hero-viewer.js'), /function startLoop[\s\S]*video\.play\(\)/, 'the loop is started after load');
   assert.match(html, /touch-action:pan-y/, 'vertical swipes must keep scrolling the page');
   for (const set of ['sd', 'hd']) {
     const files = fs.readdirSync(path.join(ROOT, 'assets/spin', set));

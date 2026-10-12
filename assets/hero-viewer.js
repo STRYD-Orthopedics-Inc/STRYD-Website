@@ -32,6 +32,19 @@
   var ctx = canvas.getContext('2d');
   if (!ctx) return;
 
+  /* ---------- start the loop after the page has loaded ----------
+     The video is large, so it is not preloaded: the tiny poster paints first (that is what the page's first paint waits for),
+     and the loop starts right after load. Skipped on Save-Data connections (the poster stays, and the viewer still works). */
+  function startLoop() {
+    if (!video || active) return;
+    var c = navigator.connection || {};
+    if (c.saveData) return;
+    var p = video.play();
+    if (p && p.catch) p.catch(function () { /* autoplay blocked: the poster stays */ });
+  }
+  if (document.readyState === 'complete') setTimeout(startLoop, 150);
+  else window.addEventListener('load', function () { setTimeout(startLoop, 150); }, { once: true });
+
   /* ---------- frames ---------- */
   var sd = new Array(N), hd = new Array(N), edges = new Array(N), loaded = 0;
   var probe = document.createElement('canvas');
