@@ -31,7 +31,7 @@ Scope each variable to the right deploy contexts (Production / Deploy Previews /
 | `CUSTOMERIO_SITE_ID` | **yes** | from H3 | set only if you want previews to send to allow-listed team addresses | |
 | `CUSTOMERIO_API_KEY` | **yes** | from H3 | same | |
 | `CUSTOMERIO_REGION` | no | `us` or `eu` | same | |
-| `CUSTOMERIO_TRACK_BASE` | no | optional override | | Only if Customer.io's current docs differ from the default `https://track.customer.io/api/v1`. **Verify on the first preview test send.** |
+| `CUSTOMERIO_TRACK_BASE` | no | optional override | | Normally unset. The default `https://track.customer.io/api/v1` (EU: `track-eu`) was confirmed against Customer.io (401 without credentials). |
 | `SENDER_EMAIL` | no | `contact@strydorthopedics.com` | | Informational; the sender is configured in the Customer.io campaigns. |
 | `POSTHOG_PROJECT_KEY` | no | from H2 | leave unset | Public key. Returned to the browser by `/api/config` **only in production**. |
 | `POSTHOG_HOST` | no | e.g. `https://us.i.posthog.com` | leave unset | Used by the server for `waitlist_confirmed` events and to derive the UI host. |

@@ -1,9 +1,9 @@
 'use strict';
 // Customer.io Track API client (HTTP basic auth: site ID + API key).
 //
-// VERIFY BEFORE PRODUCTION (handoff H3 / 4.2): confirm the workspace uses the Track API (not Data Pipelines),
-// its region, and the exact base URL below against current Customer.io docs. The base can be overridden with
-// CUSTOMERIO_TRACK_BASE without a code change.
+// Base URL confirmed 2026-10: https://track.customer.io/api/v1 (EU: https://track-eu.customer.io/api/v1) answers 401 without
+// credentials, while /v1 without /api answers 404. Confirm the workspace uses the Track API (site ID + API key). The base can
+// still be overridden with CUSTOMERIO_TRACK_BASE.
 //
 // The MCP connection is for tooling only; the deployed function uses these env vars:
 //   CUSTOMERIO_SITE_ID, CUSTOMERIO_API_KEY, CUSTOMERIO_REGION ('us' | 'eu')
