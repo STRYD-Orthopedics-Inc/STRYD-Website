@@ -9,7 +9,7 @@ Nothing here needs a build step. The site is static HTML; the waitlist backend i
 |---|---|---|
 | H1 | Create the Supabase project `stryd-waitlist` | Sign in with GitHub as **SakethKanumuriSO**. Note the region. Keep the project URL and the **service role key** private (never in chat, never committed). |
 | H2 | Create the PostHog project | Note the region (US or EU) and the **project API key** (public key, starts `phc_`). If EU, change the two `/ingest` redirects in `netlify.toml` (see the comment there). |
-| H3 | Customer.io | Confirm workspace region and that it uses the **Track API** (site ID + API key). Create the key. Add the sending domain `strydorthopedics.com` under **Settings > Workspace Settings > Email > Add Sending Domain** and add the DNS records it shows: MX + SPF TXT + DKIM TXT on its own subdomain (`cio#####.strydorthopedics.com`; **no change to your root SPF or existing mail**) and a DMARC TXT on the root (`_dmarc`) with relaxed alignment: `v=DMARC1; p=none; aspf=r; adkim=r;`. GoDaddy is supported by Customer.io's automatic setup (Entri). Confirm `contact@strydorthopedics.com` is a verified sender. |
+| H3 | Customer.io | **Sending domain `mail.strydorthopedics.com` is added** and its MX, SPF and DKIM records are live on `cio165392.mail.strydorthopedics.com` (checked in public DNS); click **Verify** in Customer.io until it shows verified. The root domain's SPF/DMARC are untouched (HubSpot and Microsoft 365 also send from the root); the existing root DMARC (`p=quarantine`, relaxed alignment) already covers the subdomain. Remaining: create the **Track API key** (site ID + API key, **Settings > Account Settings > API Credentials**), set the Netlify variables, and build the automations from `docs/customerio-emails.md`. |
 | H4 | Confirm the `contact@` mailbox exists, receives mail, and someone watches replies | Replies from the welcome email land here. |
 | H5 | ~~Provide the business mailing address~~ **Done:** STRYD Orthopedics, Inc., 811 5th Ave N, Birmingham, AL 35203 | Required in the footer of marketing email (welcome email draft includes it). |
 | H6 | Add the env vars below in Netlify | UI: Site configuration > Environment variables. Use per-context values. |
@@ -32,7 +32,7 @@ Scope each variable to the right deploy contexts (Production / Deploy Previews /
 | `CUSTOMERIO_API_KEY` | **yes** | from H3 | same | |
 | `CUSTOMERIO_REGION` | no | `us` or `eu` | same | |
 | `CUSTOMERIO_TRACK_BASE` | no | optional override | | Normally unset. The default `https://track.customer.io/api/v1` (EU: `track-eu`) was confirmed against Customer.io (401 without credentials). |
-| `SENDER_EMAIL` | no | `contact@strydorthopedics.com` | | Informational; the sender is configured in the Customer.io campaigns. |
+| `SENDER_EMAIL` | no | `contact@mail.strydorthopedics.com` | | Informational; the sender is configured in Customer.io. A from-address must end in `@mail.strydorthopedics.com`; reply-to is `contact@strydorthopedics.com`. |
 | `POSTHOG_PROJECT_KEY` | no | from H2 | leave unset | Public key. Returned to the browser by `/api/config` **only in production**. |
 | `POSTHOG_HOST` | no | e.g. `https://us.i.posthog.com` | leave unset | Used by the server for `waitlist_confirmed` events and to derive the UI host. |
 | `WAITLIST_PUBLIC_COUNT_THRESHOLD` | no | `1000` | `1000` | The counter stays hidden below this many **confirmed** signups. |
